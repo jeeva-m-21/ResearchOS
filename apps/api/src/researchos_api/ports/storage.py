@@ -1,0 +1,6 @@
+from typing import Protocol
+
+
+class ObjectStore(Protocol):
+    def presign_put(self, key: str) -> str: ...
+    def get_url(self, key: str) -> str: ...
