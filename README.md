@@ -5,3 +5,4 @@ Stack: Python (FastAPI + SDK), Next.js/TS, Postgres+pgvector (Supabase), R2.
 ## Quickstart
     make install
     make run
+test direct push
