@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "description": "Opportunity scanner findings — continuously identified and prioritized improvements",
+  "entries": [
+    {
+      "id": "O-001",
+      "timestamp": "2026-07-04T14:00:00Z",
+      "category": "automation",
+      "description": "Add coverage tracking to metrics pipeline",
+      "priority": 70,
+      "expected_impact": "Better visibility into test quality",
+      "estimated_effort": "small",
+      "confidence": "medium",
+      "recommended_action": "Add --cov flag to pytest in metrics collection step",
+      "status": "open"
+    },
+    {
+      "id": "O-002",
+      "timestamp": "2026-07-04T14:00:00Z",
+      "category": "infrastructure",
+      "description": "Mount SDK directory in docker-compose for direct development",
+      "priority": 50,
+      "expected_impact": "Eliminates need for docker cp when making SDK changes",
+      "estimated_effort": "small",
+      "confidence": "low",
+      "recommended_action": "Cannot modify docker-compose.yml (protected path). Instead, add note to AGENTS.md about manual copy step.",
+      "status": "deferred"
+    },
+    {
+      "id": "O-003",
+      "timestamp": "2026-07-04T14:00:00Z",
+      "category": "prompts",
+      "description": "Agent model name format mismatch across subagent configs",
+      "priority": 80,
+      "expected_impact": "Subagent delegation works without errors",
+      "estimated_effort": "small",
+      "confidence": "high",
+      "recommended_action": "Update subagent .md files to use correct model name format",
+      "status": "open"
+    },
+    {
+      "id": "O-004",
+      "timestamp": "2026-07-04T14:00:00Z",
+      "category": "testing",
+      "description": "Backend tests and SDK tests share the /app/tests/ directory causing path conflicts",
+      "priority": 60,
+      "expected_impact": "No cross-contamination between test suites",
+      "estimated_effort": "medium",
+      "confidence": "medium",
+      "recommended_action": "Move SDK tests to /app/sdk_tests/ or use separate test runner config",
+      "status": "open"
+    }
+  ]
+}

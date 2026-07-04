@@ -2,19 +2,20 @@
 
 from .client import ResearchOSClient
 from .experiment import Experiment
-from .wal import WAL
 from .protocol.events import (
-    EventType,
+    ArtifactUploadedEvent,
     BaseEvent,
+    EventType,
     ExperimentStartedEvent,
-    RunStartedEvent,
-    RunCompletedEvent,
+    GitCommitEvent,
     MetricLoggedEvent,
     ParameterSetEvent,
-    ArtifactUploadedEvent,
-    GitCommitEvent,
+    RunCompletedEvent,
+    RunStartedEvent,
 )
-from .protocol.validation import serialize_event, deserialize_event
+from .protocol.validation import deserialize_event, serialize_event
+from .sync import Syncer
+from .wal import WAL
 
 _client: ResearchOSClient = None
 
@@ -51,6 +52,7 @@ __all__ = [
     "log_parameters",
     "finish",
     "Experiment",
+    "Syncer",
     "WAL",
     "EventType",
     "BaseEvent",

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "description": "Version history of agent prompts for tracking evolution",
+  "entries": [
+    {
+      "date": "2026-07-04",
+      "agent": "orchestrator",
+      "version": "2",
+      "changes": "Added explicit feedback loop commands (ruff check, mypy, pytest). Added container health check step. Added debugging guidance and .pth fix documentation.",
+      "file": ".opencode/agents/orchestrator.md",
+      "success_rate": null,
+      "commit": "c724da6"
+    },
+    {
+      "date": "2026-07-04",
+      "agent": "orchestrator",
+      "version": "1",
+      "changes": "Initial version. Operating loop, golden rules, delegation pattern.",
+      "file": ".opencode/agents/orchestrator.md",
+      "success_rate": null,
+      "commit": "initial"
+    },
+    {
+      "date": "2026-07-04",
+      "agent": "backend",
+      "version": "2",
+      "changes": "Fixed ruff command (removed --fix), added pytest to feedback loop, fixed mypy flag.",
+      "file": ".opencode/agents/backend.md",
+      "success_rate": null,
+      "commit": "c724da6"
+    },
+    {
+      "date": "2026-07-04",
+      "agent": "reviewer",
+      "version": "2",
+      "changes": "Replaced :feedback <path> with explicit docker exec commands.",
+      "file": ".opencode/agents/reviewer.md",
+      "success_rate": null,
+      "commit": "c724da6"
+    },
+    {
+      "date": "2026-07-04",
+      "agent": "all",
+      "version": "1",
+      "changes": "Initial subagent prompt creation with USE THE `write` TOOL pattern.",
+      "file": ".opencode/agents/*.md",
+      "success_rate": null,
+      "commit": "initial"
+    }
+  ]
+}

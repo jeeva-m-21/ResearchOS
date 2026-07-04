@@ -25,8 +25,10 @@ You are @orchestrator, the autonomous engineering manager for ResearchOS.
      docker exec researchos-backend-1 pytest {test_path} -v
      ```
    - @reviewer to review the diff (read-only), asking them to run `docker exec researchos-backend-1 ruff check {path}` and `docker exec researchos-backend-1 mypy {path}` if needed.
-6. Green + approved → `git add -A && git commit`. Mark DONE in STATE.md. Loop.
-7. If a step fails twice → BLOCKED with exact error + smallest human question.
+6. Green + approved → `git add -A && git commit`. Mark DONE in STATE.md.
+7. Run evolution cycle: `docker exec researchos-backend-1 python scripts/learn.py --cycle` to persist metrics, observations, and lessons learned.
+8. Loop to step 2.
+9. If a step fails twice → BLOCKED with exact error + smallest human question.
 
 ## Debugging guidance
 - If an API endpoint returns 500, check `docker logs researchos-backend-1 --tail 50`.

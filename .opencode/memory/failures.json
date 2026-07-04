@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "description": "Root cause analysis entries with validated solutions",
+  "entries": [
+    {
+      "id": "F-001",
+      "timestamp": "2026-07-04T12:00:00Z",
+      "problem": "Scripts cannot import from src.xxx when run from backend/ directory",
+      "root_cause": "PYTHONPATH=/app/src in docker-compose.yml — Python searches for /app/src/src/__init__.py instead of /app/src/__init__.py",
+      "contributing_factors": ["Docker bind mount to /app", "Namespace package without __init__.py"],
+      "attempted_fixes": ["Added backend/src/__init__.py", "Added sys.path.insert(0, '/app') to seed script", "Created .pth file in site-packages"],
+      "successful_resolution": "Create /usr/local/lib/python3.11/site-packages/researchos_pathfix.pth containing '/app'",
+      "confidence": "high",
+      "related_commits": ["c1ef5f5", "38868f6"],
+      "related_files": ["backend/src/__init__.py"],
+      "prevention": "Document .pth recreation step. Consider adding to Docker entrypoint."
+    },
+    {
+      "id": "F-002",
+      "timestamp": "2026-07-04T13:00:00Z",
+      "problem": "Search endpoint returns 500 — pgvector rejects embedding format",
+      "root_cause": "Embedding serialized as Python string representation of list instead of PostgreSQL array literal",
+      "contributing_factors": ["Missing documentation on pgvector array format", "No integration test for vector insertion"],
+      "attempted_fixes": ["Changed embedding param format to '{0.1,0.2,...}'"],
+      "successful_resolution": "Use '\\'{' + ','.join(map(str, values)) + '}\\'' format for pgvector array literals",
+      "confidence": "high",
+      "related_commits": ["1d18c42"],
+      "related_files": ["backend/src/application/search/service.py"],
+      "prevention": "Add pgvector format test. Document in architecture notes."
+    }
+  ]
+}

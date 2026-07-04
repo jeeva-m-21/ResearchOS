@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "description": "Historical tracking of build, test, and development metrics",
+  "latest": {
+    "test_count": 28,
+    "test_duration_seconds": 6.9,
+    "coverage_percent": null,
+    "ruff_errors": 0,
+    "mypy_errors": 0,
+    "build_duration_seconds": null
+  },
+  "history": [
+    {
+      "date": "2026-07-04",
+      "test_count": 13,
+      "test_duration_seconds": 5.74,
+      "ruff_errors": 2,
+      "mypy_errors": 3,
+      "task": "T-007 — Search",
+      "commit": "1d18c42"
+    },
+    {
+      "date": "2026-07-04",
+      "test_count": 13,
+      "test_duration_seconds": 5.70,
+      "ruff_errors": 0,
+      "mypy_errors": 0,
+      "task": "T-007 — Self-improvement phase",
+      "commit": "c1ef5f5"
+    },
+    {
+      "date": "2026-07-04",
+      "test_count": 16,
+      "test_duration_seconds": 6.46,
+      "ruff_errors": 0,
+      "mypy_errors": 0,
+      "task": "T-008 — Notebooks CRUD",
+      "commit": "c724da6"
+    },
+    {
+      "date": "2026-07-04",
+      "test_count": 18,
+      "test_duration_seconds": 6.91,
+      "ruff_errors": 0,
+      "mypy_errors": 0,
+      "task": "T-009 — DLQ retry + consumer health",
+      "commit": "b83b17b"
+    },
+    {
+      "date": "2026-07-04",
+      "test_count": 28,
+      "test_duration_seconds": 7.74,
+      "ruff_errors": 0,
+      "mypy_errors": 0,
+      "task": "T-010 — SDK Sync client",
+      "commit": null
+    }
+  ]
+}
