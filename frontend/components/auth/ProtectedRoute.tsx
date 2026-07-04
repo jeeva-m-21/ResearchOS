@@ -4,22 +4,26 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/store/auth'
 import { Loader2 } from 'lucide-react'
+import { useHydrated } from '@/lib/hooks/useHydrated'
 
 export default function ProtectedRoute({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
   const router = useRouter()
+  const hydrated = useHydrated()
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (hydrated && !isAuthenticated) {
       router.push('/login')
     }
-  }, [isLoading, isAuthenticated, router])
+  }, [hydrated, isAuthenticated, router])
 
-  if (isLoading) {
+  // Always show loading until hydration is complete
+  // This prevents flash-of-unauthenticated-content
+  if (!hydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center space-y-3">

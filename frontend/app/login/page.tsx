@@ -6,17 +6,21 @@ import Link from 'next/link'
 import { useAuthStore } from '@/lib/store/auth'
 import { Button } from '@/components/ui/button'
 import { Loader2, FlaskConical } from 'lucide-react'
+import { useHydrated } from '@/lib/hooks/useHydrated'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login, isLoading } = useAuthStore()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { login } = useAuthStore()
   const router = useRouter()
+  const hydrated = useHydrated()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsSubmitting(true)
 
     try {
       await login(email, password)
@@ -28,8 +32,12 @@ export default function LoginPage() {
       } else {
         setError('An unexpected error occurred')
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
+
+  const busy = isSubmitting || !hydrated
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
@@ -61,8 +69,9 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="researcher@test.com"
+                disabled={busy}
               />
             </div>
 
@@ -78,11 +87,12 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="password123"
+                disabled={busy}
               />
             </div>
 
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? (
+            <Button type="submit" disabled={busy} className="w-full">
+              {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
