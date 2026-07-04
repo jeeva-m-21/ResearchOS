@@ -1,36 +1,53 @@
-.PHONY: help install dev test docker-build docker-up clean
+.PHONY: help dev docker-up docker-down test lint typecheck build clean
+
+SHELL := /bin/bash
 
 help:
-	@echo "Available commands:"
-	@echo "  make install      - Install all dependencies"
-	@echo "  make dev          - Start development server"
-	@echo "  make test         - Run all tests"
-	@echo "  make docker-build - Build Docker images"
-	@echo "  make docker-up    - Start Docker Compose"
-	@echo "  make clean        - Clean build artifacts"
+	@echo "ResearchOS Commands"
+	@echo "==================="
+	@echo "  make dev          — Start full MVP (Docker + Backend + Frontend)"
+	@echo "  make docker-up    — Start PostgreSQL + Redis containers only"
+	@echo "  make docker-down  — Stop all Docker containers"
+	@echo "  make test         — Run backend + frontend tests"
+	@echo "  make lint         — Run ruff lint on backend"
+	@echo "  make typecheck    — Run mypy type check on backend"
+	@echo "  make build        — Build frontend for production"
+	@echo "  make clean        — Clean build artifacts"
 
-install:
-	cd backend && pip install -e ".[dev]"
-	cd sdk/python && pip install -e ".[dev]"
-	cd frontend && npm install
-
+# ── Start MVP (Docker + Backend + Frontend) ──
 dev:
-	docker-compose up -d postgres redis
-	cd backend && uvicorn src.api.main:app --reload --port 8000 &
+	@./start.sh
 
-test:
-	cd backend && pytest tests/
-	cd frontend && npm test
-
-docker-build:
-	docker build -t researchos-backend:latest ./backend
-	docker build -t researchos-frontend:latest ./frontend
-
+# ── Docker services ──────────────────────────
 docker-up:
-	docker-compose up -d
+	docker compose up -d postgres redis
 
+docker-down:
+	docker compose down
+
+# ── Tests ────────────────────────────────────
+test:
+	@echo "Running backend tests..."
+	@docker exec researchos-backend-1 pytest tests/ -v
+	@echo ""
+	@echo "Running frontend type check..."
+	@cd frontend && npx tsc --noEmit
+
+# ── Lint & Type Check ───────────────────────
+lint:
+	@docker exec researchos-backend-1 ruff check src/
+
+typecheck:
+	@docker exec researchos-backend-1 mypy src/
+
+# ── Build ────────────────────────────────────
+build:
+	@cd frontend && npm run build
+
+# ── Clean ──────────────────────────────────
 clean:
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type d -name "node_modules" -exec rm -rf {} +
-	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	rm -rf .ruff_cache .mypy_cache
+	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	@rm -rf .ruff_cache .mypy_cache 2>/dev/null || true
+	@rm -rf frontend/.next 2>/dev/null || true
+	@echo "Cleaned build artifacts"
