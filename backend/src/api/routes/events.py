@@ -229,14 +229,21 @@ async def retry_dlq_events(
     """
     Retry events from Dead Letter Queue.
 
-    Admin-only endpoint to retry failed event processing.
+    Moves failed events back to the main event stream for reprocessing.
     """
-    # Placeholder - would implement DLQ retry logic
+    result = await events_service.dlq.retry_all(
+        consumer_group,
+        limit=limit,
+    )
+
     return {
-        "status": "queued",
+        "status": "completed",
         "consumer_group": consumer_group,
         "limit": limit,
-        "message": "DLQ retry will be implemented"
+        "attempted": result.get("total_attempted", 0),
+        "successful": result.get("successful", 0),
+        "failed": result.get("failed", 0),
+        "details": result.get("details", []),
     }
 
 
