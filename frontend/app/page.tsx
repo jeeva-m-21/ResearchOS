@@ -47,9 +47,6 @@ const stats = [
 export default function Home() {
   return (
     <main className="relative min-h-screen">
-      {/* Grid overlay for hero area */}
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-[0.03] dark:opacity-[0.05]" />
-
       {/* Nav bar */}
       <motion.header
         variants={fadeIn}
