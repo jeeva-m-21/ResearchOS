@@ -10,14 +10,14 @@ Task format:
 - notes: <one line of context>
 
 ## T-001 — Fix GET /auth/api-keys 404
-- status: TODO
+- status: DONE
 - deps: none
 - agents: @backend, @test
 - acceptance: test_auth_api_keys_post_creates_key passes; ruff + mypy clean
 - notes: endpoint should be POST /auth/api-keys; remove/redirect the bad GET
 
 ## T-002 — logout requires refresh_token body
-- status: TODO
+- status: DONE
 - deps: none
 - agents: @backend, @test
 - acceptance: test_logout_with_refresh_token returns 200; missing body returns 422
