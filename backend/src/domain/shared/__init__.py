@@ -1,5 +1,5 @@
 """Shared kernel"""
-from .value_objects import OrganizationId, UserId, ProjectId, Timestamps
 from .events import DomainEvent
+from .value_objects import OrganizationId, ProjectId, Timestamps, UserId
 
 __all__ = ["OrganizationId", "UserId", "ProjectId", "Timestamps", "DomainEvent"]

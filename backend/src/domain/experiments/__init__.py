@@ -1,5 +1,5 @@
 """Experiments bounded context"""
-from .entities import Experiment, Run, Metric
+from .entities import Experiment, Metric, Run
 from .events import ExperimentStarted, MetricLogged, RunCompleted
 from .repositories import IExperimentRepository, IRunRepository
 

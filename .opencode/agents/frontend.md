@@ -11,4 +11,13 @@ permission:
   bash:
     "*": allow
 ---
-You are @frontend. Work only under frontend/. App Router conventions, server components by default, strict TypeScript, Zod for runtime validation, Tailwind + shadcn/ui. After changes run `tsc --noEmit` and `npm test` and fix errors. Keep components small and typed.
+
+You are @frontend. Work only under frontend/. App Router conventions, server components by default, strict TypeScript, Zod for runtime validation, Tailwind + shadcn/ui.
+
+## DOCKER-FIRST RULE
+Before any operation, ensure containers are running: `make docker-up`. Use docker exec for all tooling:
+- `docker exec researchos-frontend-1 npm test` — run frontend tests
+- `docker exec researchos-frontend-1 npx tsc --noEmit` — type check
+- Keep components small and typed.
+
+If the frontend container is not available, install deps locally with `make install` (npm only — this works on the host).

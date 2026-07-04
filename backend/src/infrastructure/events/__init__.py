@@ -18,16 +18,17 @@ Design Constraints:
 - Event ordering preserved per aggregate
 """
 
-from .producer import EventProducer
+from .backoff import ExponentialBackoff, RetryLimiter
 from .consumer import EventConsumer
 from .dlq import DeadLetterQueue
-from .backoff import ExponentialBackoff, RetryLimiter
-from .idempotency import IdempotencyChecker, IdempotentProcessor
-from .service import EventsService, EventsServiceFactory
+from .handlers.notifications import NotificationHandler, NotificationManager
 
 # Event handlers
 from .handlers.projections import ProjectionHandler, ProjectionManager
-from .handlers.notifications import NotificationHandler, NotificationManager
+from .idempotency import IdempotencyChecker, IdempotentProcessor
+from .producer import EventProducer
+from .service import EventsService, EventsServiceFactory
+from .store import EventStore
 
 __all__ = [
     # Core infrastructure
@@ -38,11 +39,14 @@ __all__ = [
     "RetryLimiter",
     "IdempotencyChecker",
     "IdempotentProcessor",
-    
+
     # Service layer
     "EventsService",
     "EventsServiceFactory",
-    
+
+    # Event store
+    "EventStore",
+
     # Event handlers
     "ProjectionHandler",
     "ProjectionManager",

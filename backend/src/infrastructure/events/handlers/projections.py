@@ -6,15 +6,15 @@ Projections are optimized for querying, denormalized views of domain state.
 """
 
 import logging
-from typing import Dict, Any
-from uuid import UUID
-import asyncpg
 from datetime import datetime
+from typing import Any, Dict
 
-from src.domain.shared.events import DomainEvent
+import asyncpg
+
 from src.domain.experiments.events import ExperimentStarted, MetricLogged
 from src.domain.notebooks.events import NotebookUpdated
 from src.domain.papers.events import PaperEdited
+from src.domain.shared.events import DomainEvent
 
 logger = logging.getLogger(__name__)
 
@@ -22,17 +22,17 @@ logger = logging.getLogger(__name__)
 class ProjectionHandler:
     """
     Updates read model projections from events.
-    
+
     Each projection is an optimized view of domain state for specific query patterns.
     """
-    
+
     def __init__(self, db_pool: asyncpg.Pool):
         self.db = db_pool
-    
+
     async def handle_experiment_started(self, event: ExperimentStarted) -> None:
         """
         Update experiment summary projection.
-        
+
         Creates/updates denormalized experiment view for fast querying.
         """
         try:
@@ -69,21 +69,21 @@ class ProjectionHandler:
                     event.timestamp,
                     event.timestamp
                 )
-            
+
             logger.debug(
                 f"Updated experiment projection for {event.experiment_id}"
             )
-            
+
         except Exception as e:
             logger.error(
                 f"Error updating experiment projection for {event.experiment_id}: {e}"
             )
             raise
-    
+
     async def handle_metric_logged(self, event: MetricLogged) -> None:
         """
         Update metric summary projection.
-        
+
         Maintains aggregated metrics (min, max, avg, count) for fast querying.
         """
         try:
@@ -103,7 +103,7 @@ class ProjectionHandler:
                     ON CONFLICT (run_id, key) DO UPDATE SET
                         min_value = LEAST(metric_summary.min_value, $3),
                         max_value = GREATEST(metric_summary.max_value, $3),
-                        avg_value = (metric_summary.avg_value * metric_summary.count + $3) 
+                        avg_value = (metric_summary.avg_value * metric_summary.count + $3)
                                    / (metric_summary.count + 1),
                         count = metric_summary.count + 1,
                         last_value = $3,
@@ -114,21 +114,21 @@ class ProjectionHandler:
                     event.value,
                     event.timestamp
                 )
-            
+
             logger.debug(
                 f"Updated metric projection for run {event.run_id}, key {event.key}"
             )
-            
+
         except Exception as e:
             logger.error(
                 f"Error updating metric projection for run {event.run_id}: {e}"
             )
             raise
-    
+
     async def handle_notebook_updated(self, event: NotebookUpdated) -> None:
         """
         Update notebook summary projection.
-        
+
         Maintains notebook metadata and block counts for fast querying.
         """
         try:
@@ -137,7 +137,7 @@ class ProjectionHandler:
                 if event.operation == "add_block":
                     await conn.execute(
                         """
-                        UPDATE notebook_summary 
+                        UPDATE notebook_summary
                         SET block_count = block_count + 1,
                             updated_at = $1
                         WHERE notebook_id = $2
@@ -148,7 +148,7 @@ class ProjectionHandler:
                 elif event.operation == "remove_block":
                     await conn.execute(
                         """
-                        UPDATE notebook_summary 
+                        UPDATE notebook_summary
                         SET block_count = GREATEST(0, block_count - 1),
                             updated_at = $1
                         WHERE notebook_id = $2
@@ -156,22 +156,22 @@ class ProjectionHandler:
                         event.timestamp,
                         event.notebook_id
                     )
-            
+
             logger.debug(
                 f"Updated notebook projection for {event.notebook_id}, "
                 f"operation {event.operation}"
             )
-            
+
         except Exception as e:
             logger.error(
                 f"Error updating notebook projection for {event.notebook_id}: {e}"
             )
             raise
-    
+
     async def handle_paper_edited(self, event: PaperEdited) -> None:
         """
         Update paper summary projection.
-        
+
         Maintains paper metadata and version tracking.
         """
         try:
@@ -205,21 +205,21 @@ class ProjectionHandler:
                     event.created_by,
                     event.timestamp
                 )
-            
+
             logger.debug(
                 f"Updated paper projection for {event.paper_id}, version {event.version}"
             )
-            
+
         except Exception as e:
             logger.error(
                 f"Error updating paper projection for {event.paper_id}: {e}"
             )
             raise
-    
+
     async def handle_generic_event(self, event: DomainEvent) -> None:
         """
         Handle generic domain events.
-        
+
         Updates event tracking projection for audit and monitoring.
         """
         try:
@@ -242,11 +242,11 @@ class ProjectionHandler:
                     getattr(event, 'organization_id', None),
                     datetime.utcnow()
                 )
-            
+
             logger.debug(
                 f"Tracked event {event.event_id} ({event.event_type})"
             )
-            
+
         except Exception as e:
             logger.error(
                 f"Error tracking event {event.event_id}: {e}"
@@ -257,14 +257,14 @@ class ProjectionHandler:
 class ProjectionManager:
     """
     Manages multiple projection handlers.
-    
+
     Routes events to appropriate handlers and manages handler lifecycle.
     """
-    
+
     def __init__(self, db_pool: asyncpg.Pool):
         self.db = db_pool
         self.handlers = ProjectionHandler(db_pool)
-        
+
         # Event type to handler mapping
         self.handler_map: Dict[str, callable] = {
             "experiment.started": self.handlers.handle_experiment_started,
@@ -272,16 +272,16 @@ class ProjectionManager:
             "notebook.updated": self.handlers.handle_notebook_updated,
             "paper.edited": self.handlers.handle_paper_edited,
         }
-    
+
     async def handle_event(self, event: DomainEvent) -> None:
         """
         Route event to appropriate handler.
-        
+
         Args:
             event: Domain event to process
         """
         handler = self.handler_map.get(event.event_type)
-        
+
         if handler:
             logger.info(
                 f"Routing event {event.event_id} ({event.event_type}) "
@@ -291,17 +291,17 @@ class ProjectionManager:
         else:
             # Handle generic events
             await self.handlers.handle_generic_event(event)
-    
+
     async def health_check(self) -> Dict[str, Any]:
         """Health check for projection manager"""
         try:
             async with self.db.acquire() as conn:
                 # Test database connection
                 result = await conn.fetchval("SELECT 1")
-                
+
                 if result != 1:
                     raise RuntimeError("Database health check failed")
-            
+
             return {
                 "status": "healthy",
                 "database": "connected",

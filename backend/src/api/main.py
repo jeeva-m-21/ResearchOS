@@ -1,13 +1,71 @@
 """FastAPI application entry point"""
+import asyncio
+import logging
 import os
+from contextlib import asynccontextmanager
+from typing import List
+from uuid import UUID
+
+import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 from prometheus_client import make_asgi_app
 
-from .routes import auth, experiments, search, health, metrics, events
-from .middleware.auth import AuthMiddleware, OrganizationMiddleware
 from src.infrastructure.database import db
+from src.infrastructure.events import EventConsumer, EventStore
+
+from .middleware.auth import AuthMiddleware, OrganizationMiddleware
+from .routes import auth, events, experiments, health, metrics, search
+
+logger = logging.getLogger(__name__)
+
+# Track background consumer tasks for graceful shutdown
+_consumer_tasks: List[asyncio.Task] = []
+
+
+async def _start_event_store_consumers() -> None:
+    """Start EventStore consumers for each organization found in the database.
+
+    Each consumer listens on its org-scoped Redis Stream (``events:org_{id}``)
+    and persists every event to the ``events`` table.
+    """
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    r = redis.from_url(redis_url, decode_responses=False)
+
+    # Fetch all active organizations
+    org_rows = await db.fetch_all(
+        "SELECT id FROM organizations"
+    )
+    if not org_rows:
+        logger.info("No organizations found — skipping EventStore consumer startup")
+        return
+
+    store = EventStore()
+
+    for row in org_rows:
+        org_id: UUID = row["id"]
+
+        async def handle_event(event, _oid=org_id, _store=store):
+            await _store.store_event(event)
+
+        consumer = EventConsumer(
+            redis_client=r,
+            consumer_group="event-store",
+            consumer_name=f"event-store-{org_id}",
+            organization_id=org_id,
+            batch_size=10,
+            block_ms=1000,
+        )
+
+        consumer.on("experiment.started")(handle_event)
+        consumer.on("metric.logged")(handle_event)
+        consumer.on("run.started")(handle_event)
+        consumer.on("run.completed")(handle_event)
+
+        task = asyncio.create_task(consumer.start(), name=f"event-store-{org_id}")
+        _consumer_tasks.append(task)
+        logger.info("Started EventStore consumer for org %s", org_id)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,10 +74,21 @@ async def lifespan(app: FastAPI):
     database_url = os.getenv("DATABASE_URL", "postgresql://researchos:researchos@postgres:5432/researchos")
     await db.connect(database_url)
     print(f"✅ Database connected: {database_url}")
-    
+
+    # Start background event store consumers
+    try:
+        await _start_event_store_consumers()
+    except Exception as exc:
+        logger.warning("EventStore consumer startup failed (non-fatal): %s", exc)
+
     yield
-    
-    # Shutdown: Disconnect from database
+
+    # Shutdown: cancel consumer tasks and disconnect
+    for task in _consumer_tasks:
+        task.cancel()
+    if _consumer_tasks:
+        await asyncio.gather(*_consumer_tasks, return_exceptions=True)
+        _consumer_tasks.clear()
     await db.disconnect()
     print("✅ Database disconnected")
 

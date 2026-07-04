@@ -31,7 +31,7 @@ Task format:
 - notes: duplicate listing in list_event_types, user_id typo in test_emit_event
 
 ## T-004 — Wire event emission into experiment lifecycle
-- status: TODO
+- status: DONE
 - deps: T-003
 - agents: @backend, @test
 - acceptance: creating an experiment emits experiment.started to Redis Stream; test verifies via stream read

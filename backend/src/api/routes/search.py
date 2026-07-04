@@ -1,6 +1,7 @@
 """Search endpoints"""
+from typing import List, Optional
+
 from fastapi import APIRouter, Query
-from typing import Optional, List
 
 router = APIRouter()
 

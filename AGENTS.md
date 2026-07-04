@@ -1,18 +1,22 @@
 # ResearchOS AGENTS.md
 > Instructions for AI agents working on the ResearchOS codebase.
 
-## Environment (READ FIRST — do not skip)
+## Environment — CRITICAL: DOCKER-FIRST (READ FIRST — do not skip)
 This project is already set up. Your job is to work within it, not rebuild it.
 
-- Use the Makefile for everything. It encapsulates the correct environment. Never run pip install, bare pytest, or ad-hoc setup commands.
-  - make install — install/sync all dependencies (managed via backend/pyproject.toml). Run this FIRST if anything is missing.
-  - make docker-up — start Postgres 16 + Redis 7 (required before running the app or DB-touching tests).
-  - make dev — start the dev server.
-  - make test — run the test suite.
-- If a tool/package seems missing, STOP and run make install. Do NOT install it yourself, do NOT create a venv, do NOT pip install. If make install doesn't fix it, STOP and ask a human.
+**The host Python is externally-managed. `make install` WILL FAIL. All Python tooling runs INSIDE Docker containers.**
+
+- `make docker-up` — start Postgres 16 + Redis 7 containers (required before running the app or DB-touching tests). Run this FIRST.
+- All Python tooling uses `docker exec researchos-backend-1 <command>`:
+  - `docker exec researchos-backend-1 ruff check backend/src/backend/tests/` — lint
+  - `docker exec researchos-backend-1 mypy backend/src/` — type check
+  - `docker exec researchos-backend-1 pytest tests/PATH -v` — run specific test
+  - `docker exec researchos-backend-1 pytest tests/ -v` — run all tests
+  - `docker exec researchos-backend-1 alembic revision -m "..."` — new migration
+  - `docker exec researchos-backend-1 alembic upgrade head` — apply migrations
+- NEVER run `pip install`, `make install`, or create a venv.
 - NEVER touch the Protected Paths below. Docker, compose, Helm, Terraform, CI, and existing Alembic migrations are production-ready and DONE. If something looks missing or broken there, STOP and ask — do not recreate or fix it.
-- After every edit, run the feedback loop before continuing:
-  - ruff check backend/ (lint) and mypy backend/src/ (types). Fix all errors before moving on.
+- After every edit, run the feedback loop before continuing via `docker exec researchos-backend-1`.
 - Work in small, reversible steps. One failing test at a time. If a change makes things worse, revert (/undo) instead of stacking more fixes.
 
 ### Protected paths — NEVER create, edit, or delete
@@ -38,9 +42,7 @@ This project is already set up. Your job is to work within it, not rebuild it.
 2. Check the current task in .opencode/tasks/.
 3. Read your role instructions in .opencode/agents/{agent-name}.md.
 4. Plan the change and get it approved (Golden Rule #1).
-5. Ensure env is ready: make install -> make docker-up.
-6. Implement one atomic step; run ruff + mypy + the relevant test.
-7. Request review from @reviewer, then commit.
+5. Ensure env is ready: make docker-up (do NOT run make install — it will fail on the host).
 
 ## Current Status (July 3, 2026) — PROTECTED
 Phase 1 is COMPLETE and PRODUCTION READY. Treat all Phase 1 code, schema, and infra as protected. Do not modify it to make a Phase 2 feature easier without explicit human approval. Extend, don't rewrite.
@@ -121,19 +123,17 @@ Search p99 < 100ms | API p95 < 200ms | 10k concurrent users/tenant | idempotent 
 ## Environment & Commands (make-first)
 
     # Setup / run (ALWAYS prefer these)
-    make install        # Install/sync dependencies (backend/pyproject.toml)
     make docker-up      # Start Postgres 16 + Redis 7
     make dev            # Start dev server (API on http://localhost:8000)
     make test           # Run tests
 
-    # Backend (only if a make target doesn't exist)
-    cd backend
-    pytest tests/       # Run tests
-    pytest --cov        # Coverage
-    ruff check src/     # Lint
-    mypy src/           # Type check
-    alembic revision -m "message"   # Create a NEW migration (never edit existing ones)
-    alembic upgrade head            # Apply migrations
+    # Backend (ALWAYS use docker exec — never run directly on host)
+    docker exec researchos-backend-1 pytest tests/       # Run tests
+    docker exec researchos-backend-1 pytest --cov        # Coverage
+    docker exec researchos-backend-1 ruff check src/     # Lint
+    docker exec researchos-backend-1 mypy src/           # Type check
+    docker exec researchos-backend-1 alembic revision -m "message"   # Create a NEW migration (never edit existing ones)
+    docker exec researchos-backend-1 alembic upgrade head            # Apply migrations
 
     # Frontend
     cd frontend
