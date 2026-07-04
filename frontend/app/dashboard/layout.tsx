@@ -63,7 +63,9 @@ function NavLinks({ className, onNavClick }: { className?: string; onNavClick?: 
     <nav className={cn('space-y-1', className)}>
       {navItems.map((item) => {
         const Icon = item.icon
-        const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+        const isActive = item.href === '/dashboard'
+          ? pathname === '/dashboard'
+          : pathname === item.href || pathname.startsWith(item.href + '/')
         return (
           <Link
             key={item.href}

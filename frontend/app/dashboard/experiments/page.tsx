@@ -101,9 +101,9 @@ function ExperimentCard({ experiment }: { experiment: Experiment }) {
   const statusColor = statusColors[experiment.status] || 'bg-muted text-muted-foreground'
 
   return (
-    <Link href={`/dashboard/experiments/${experiment.id}`}>
-      <div className="rounded-xl bg-card p-5 shadow-sm border border-border hover:shadow-md hover:border-foreground/20 transition-all cursor-pointer">
-        <div className="flex items-start justify-between">
+    <Link href={`/dashboard/experiments/${experiment.id}`} className="h-full">
+      <div className="flex flex-col h-full rounded-xl bg-card p-5 shadow-sm border border-border hover:shadow-md hover:border-foreground/20 transition-all cursor-pointer">
+        <div className="flex items-start justify-between flex-1">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground truncate">{experiment.name}</h3>
             {experiment.description && (
@@ -116,7 +116,7 @@ function ExperimentCard({ experiment }: { experiment: Experiment }) {
             {experiment.status}
           </span>
         </div>
-        <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground shrink-0">
           <span>Created {new Date(experiment.created_at).toLocaleDateString()}</span>
         </div>
       </div>

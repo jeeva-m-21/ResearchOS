@@ -53,7 +53,7 @@ export function StarfieldGrid({
         size: Math.random() * 2 + 0.8,
         pulseDuration: Math.random() * 4 + 3,
         pulseDelay: Math.random() * -5,
-        baseOpacity: Math.random() * 0.5 + 0.3,
+        baseOpacity: Math.random() * 0.15 + 0.08,
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -84,17 +84,30 @@ export function StarfieldGrid({
     <div className={cn('pointer-events-none fixed inset-0 overflow-hidden', className)}>
       {/* Layer 1: Subtle graphing-paper grid */}
       <div
-        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]"
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
         style={{
           backgroundImage: [
-            'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px)',
-            'linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)',
+            'linear-gradient(hsl(var(--muted-foreground)) 1px, transparent 1px)',
+            'linear-gradient(90deg, hsl(var(--muted-foreground)) 1px, transparent 1px)',
           ].join(', '),
           backgroundSize: '60px 60px',
         }}
       />
 
-      {/* Layer 2: Constellation SVG lines */}
+      {/* Layer 2: Scattered dot pattern — organic feel, pure CSS */}
+      <div
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.04]"
+        style={{
+          backgroundImage: [
+            'radial-gradient(circle at 10px 10px, hsl(var(--muted-foreground)) 1px, transparent 1px)',
+            'radial-gradient(circle at 28px 18px, hsl(var(--muted-foreground)) 0.8px, transparent 0.8px)',
+            'radial-gradient(circle at 45px 40px, hsl(var(--muted-foreground)) 0.6px, transparent 0.6px)',
+          ].join(', '),
+          backgroundSize: '60px 60px, 70px 70px, 80px 80px',
+        }}
+      />
+
+      {/* Layer 3: Constellation SVG lines */}
       <svg className="absolute inset-0 h-full w-full" aria-hidden>
         {connections.map((conn) => {
           const from = stars[conn.from]
@@ -106,18 +119,18 @@ export function StarfieldGrid({
               y1={`${from.y}%`}
               x2={`${to.x}%`}
               y2={`${to.y}%`}
-              className="stroke-foreground/5 dark:stroke-foreground/8"
+              className="stroke-muted-foreground/3 dark:stroke-muted-foreground/4"
               strokeWidth="0.5"
             />
           )
         })}
       </svg>
 
-      {/* Layer 3: Twinkling stars */}
+      {/* Layer 4: Twinkling stars */}
       {stars.map((star) => (
         <motion.div
           key={star.id}
-          className="absolute rounded-full bg-foreground"
+          className="absolute rounded-full bg-muted-foreground"
           style={{
             width: star.size,
             height: star.size,
@@ -141,13 +154,6 @@ export function StarfieldGrid({
         />
       ))}
 
-      {/* Subtle vignette */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse at center, transparent 50%, hsl(var(--background)) 100%)`,
-        }}
-      />
     </div>
   )
 }

@@ -49,8 +49,8 @@ function StatCard({
   color: string
 }) {
   return (
-    <Link href={href}>
-      <div className="rounded-xl bg-card p-5 shadow-sm border border-border hover:shadow-md transition-shadow">
+    <Link href={href} className="h-full">
+      <div className="flex flex-col h-full rounded-xl bg-card p-5 shadow-sm border border-border hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{title}</p>
           <Icon className={`h-5 w-5 ${color}`} />
