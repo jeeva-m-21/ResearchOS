@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -35,21 +35,27 @@ const variantColors = {
 }
 
 export function FloatingOrbs({ className, count = 6, variant = 'mixed' }: FloatingOrbsProps) {
-  const colors = variantColors[variant]
+  const [mounted, setMounted] = useState(false)
 
-  const orbs: Orb[] = useMemo(
-    () =>
-      Array.from({ length: count }, (_, i) => ({
-        id: i,
-        size: Math.random() * 300 + 100,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        duration: Math.random() * 20 + 15,
-        delay: Math.random() * -10,
-        color: colors[i % colors.length],
-      })),
-    [count, colors],
-  )
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Don't render during SSR to prevent hydration mismatch from Math.random()
+  if (!mounted) {
+    return <div className={cn('pointer-events-none fixed inset-0 overflow-hidden', className)} />
+  }
+
+  const colors = variantColors[variant]
+  const orbs: Orb[] = Array.from({ length: count }, (_, i) => ({
+    id: i,
+    size: Math.random() * 300 + 100,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    duration: Math.random() * 20 + 15,
+    delay: Math.random() * -10,
+    color: colors[i % colors.length],
+  }))
 
   return (
     <div className={cn('pointer-events-none fixed inset-0 overflow-hidden', className)}>

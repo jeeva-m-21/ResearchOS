@@ -13,32 +13,28 @@ import {
 } from 'lucide-react'
 import { fadeInUp, staggerContainer, fadeIn, slideInRight } from '@/lib/hooks/use-motion'
 import { TiltCard } from '@/components/ui/tilt-card'
-import { ThemeToggle } from '@/components/theme-toggle'
 
 const features = [
   {
     icon: FlaskConical,
     title: 'Experiments',
     description: 'Track and manage ML experiments with runs and metrics',
-    gradient: 'from-blue-500 to-blue-600',
-    bgLight: 'bg-blue-50',
-    bgDark: 'dark:bg-blue-950/30',
+    bgLight: 'bg-secondary',
+    bgDark: '',
   },
   {
     icon: BookOpen,
     title: 'Notebooks',
     description: 'Block-based research notebooks with code execution',
-    gradient: 'from-emerald-500 to-emerald-600',
-    bgLight: 'bg-emerald-50',
-    bgDark: 'dark:bg-emerald-950/30',
+    bgLight: 'bg-secondary',
+    bgDark: '',
   },
   {
     icon: Search,
     title: 'Search',
     description: 'Semantic search across all your research assets',
-    gradient: 'from-purple-500 to-purple-600',
-    bgLight: 'bg-purple-50',
-    bgDark: 'dark:bg-purple-950/30',
+    bgLight: 'bg-secondary',
+    bgDark: '',
   },
 ]
 
@@ -69,7 +65,6 @@ export default function Home() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <ThemeToggle />
           <Link
             href="/login"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -198,7 +193,7 @@ export default function Home() {
                       <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                       <div
-                        className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${feature.bgLight} ${feature.bgDark} mb-4`}
+                        className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-secondary mb-4"
                       >
                         <Icon className="h-5 w-5 text-foreground" />
                       </div>
