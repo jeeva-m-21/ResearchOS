@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "description": "Capability Graph — tracks all discovered capabilities, their scores, rankings, and recommended use cases",
-  "last_evaluated": "2026-07-04T17:50:35Z",
+  "last_evaluated": "2026-07-04T18:30:00Z",
   "capabilities": [
     {
       "name": "context7",
@@ -143,28 +143,161 @@
         "reliability": 95, "relevance": 95, "productivity_impact": 90,
         "integration_complexity": 90
       }
+    },
+    {
+      "name": "filesystem",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["filesystem", "core_development"],
+      "enabled": true,
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."],
+      "health": "configured",
+      "score": 88.0,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 90, "security": 75, "maintenance": 85,
+        "documentation": 85, "community": 80, "performance": 90,
+        "reliability": 90, "relevance": 90, "productivity_impact": 90,
+        "integration_complexity": 85
+      }
+    },
+    {
+      "name": "fetch",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["web", "data_fetching"],
+      "enabled": true,
+      "command": ["uvx", "mcp-server-fetch"],
+      "health": "configured",
+      "score": 82.0,
+      "recommendation": "recommended",
+      "dimensions": {
+        "compatibility": 85, "security": 75, "maintenance": 80,
+        "documentation": 80, "community": 75, "performance": 85,
+        "reliability": 80, "relevance": 85, "productivity_impact": 85,
+        "integration_complexity": 80
+      }
+    },
+    {
+      "name": "memory",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["knowledge_graph", "memory"],
+      "enabled": true,
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "health": "configured",
+      "score": 80.0,
+      "recommendation": "recommended",
+      "dimensions": {
+        "compatibility": 80, "security": 80, "maintenance": 75,
+        "documentation": 75, "community": 70, "performance": 80,
+        "reliability": 80, "relevance": 85, "productivity_impact": 80,
+        "integration_complexity": 85
+      }
+    },
+    {
+      "name": "next-devtools",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["frontend", "react", "nextjs"],
+      "enabled": true,
+      "command": ["npx", "-y", "next-devtools-mcp@latest"],
+      "health": "configured",
+      "score": 78.0,
+      "recommendation": "recommended",
+      "dimensions": {
+        "compatibility": 80, "security": 75, "maintenance": 75,
+        "documentation": 75, "community": 65, "performance": 80,
+        "reliability": 75, "relevance": 85, "productivity_impact": 80,
+        "integration_complexity": 80
+      }
+    },
+    {
+      "name": "shadcn",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["frontend", "react", "ui_components"],
+      "enabled": true,
+      "command": ["npx", "shadcn@latest", "mcp"],
+      "health": "configured",
+      "score": 85.0,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 85, "security": 80, "maintenance": 85,
+        "documentation": 85, "community": 85, "performance": 85,
+        "reliability": 80, "relevance": 90, "productivity_impact": 85,
+        "integration_complexity": 85
+      }
+    },
+    {
+      "name": "chrome-devtools",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["frontend", "browser_debugging", "performance"],
+      "enabled": true,
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
+      "health": "configured",
+      "score": 92.0,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 90, "security": 85, "maintenance": 85,
+        "documentation": 90, "community": 85, "performance": 95,
+        "reliability": 90, "relevance": 95, "productivity_impact": 95,
+        "integration_complexity": 90
+      }
+    },
+    {
+      "name": "docker",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["devops", "containers"],
+      "enabled": true,
+      "command": ["npx", "-y", "mcp-server-docker-npx"],
+      "health": "configured",
+      "score": 84.0,
+      "recommendation": "recommended",
+      "dimensions": {
+        "compatibility": 85, "security": 80, "maintenance": 80,
+        "documentation": 80, "community": 85, "performance": 85,
+        "reliability": 85, "relevance": 85, "productivity_impact": 85,
+        "integration_complexity": 75
+      }
     }
   ],
   "top_tools": [
     {"name": "ruff", "type": "lsp_server", "score": 93.8, "recommendation": "highly_recommended"},
     {"name": "pytest", "type": "test_runner", "score": 93.0, "recommendation": "highly_recommended"},
+    {"name": "chrome-devtools", "type": "mcp_server", "score": 92.0, "recommendation": "highly_recommended"},
+    {"name": "filesystem", "type": "mcp_server", "score": 88.0, "recommendation": "highly_recommended"},
+    {"name": "context7", "type": "mcp_server", "score": 86.0, "recommendation": "highly_recommended"},
     {"name": "black", "type": "formatter", "score": 85.2, "recommendation": "highly_recommended"},
     {"name": "mypy", "type": "lsp_server", "score": 85.0, "recommendation": "highly_recommended"},
-    {"name": "context7", "type": "mcp_server", "score": 86.0, "recommendation": "highly_recommended"},
+    {"name": "shadcn", "type": "mcp_server", "score": 85.0, "recommendation": "highly_recommended"},
+    {"name": "docker", "type": "mcp_server", "score": 84.0, "recommendation": "recommended"},
     {"name": "postgres", "type": "mcp_server", "score": 82.0, "recommendation": "highly_recommended"},
+    {"name": "fetch", "type": "mcp_server", "score": 82.0, "recommendation": "recommended"},
     {"name": "playwright", "type": "mcp_server", "score": 80.0, "recommendation": "recommended"},
+    {"name": "memory", "type": "mcp_server", "score": 80.0, "recommendation": "recommended"},
     {"name": "sequential-thinking", "type": "mcp_server", "score": 78.0, "recommendation": "recommended"},
+    {"name": "next-devtools", "type": "mcp_server", "score": 78.0, "recommendation": "recommended"},
     {"name": "github", "type": "mcp_server", "score": 76.0, "recommendation": "recommended"}
   ],
   "ranking": [
     {"rank": 1, "name": "ruff", "type": "lsp_server", "score": 93.8, "recommendation": "highly_recommended"},
     {"rank": 2, "name": "pytest", "type": "test_runner", "score": 93.0, "recommendation": "highly_recommended"},
-    {"rank": 3, "name": "context7", "type": "mcp_server", "score": 86.0, "recommendation": "highly_recommended"},
-    {"rank": 4, "name": "black", "type": "formatter", "score": 85.2, "recommendation": "highly_recommended"},
-    {"rank": 5, "name": "mypy", "type": "lsp_server", "score": 85.0, "recommendation": "highly_recommended"},
-    {"rank": 6, "name": "postgres", "type": "mcp_server", "score": 82.0, "recommendation": "highly_recommended"},
-    {"rank": 7, "name": "playwright", "type": "mcp_server", "score": 80.0, "recommendation": "recommended"},
-    {"rank": 8, "name": "sequential-thinking", "type": "mcp_server", "score": 78.0, "recommendation": "recommended"},
-    {"rank": 9, "name": "github", "type": "mcp_server", "score": 76.0, "recommendation": "recommended"}
+    {"rank": 3, "name": "chrome-devtools", "type": "mcp_server", "score": 92.0, "recommendation": "highly_recommended"},
+    {"rank": 4, "name": "filesystem", "type": "mcp_server", "score": 88.0, "recommendation": "highly_recommended"},
+    {"rank": 5, "name": "context7", "type": "mcp_server", "score": 86.0, "recommendation": "highly_recommended"},
+    {"rank": 6, "name": "black", "type": "formatter", "score": 85.2, "recommendation": "highly_recommended"},
+    {"rank": 7, "name": "mypy", "type": "lsp_server", "score": 85.0, "recommendation": "highly_recommended"},
+    {"rank": 8, "name": "shadcn", "type": "mcp_server", "score": 85.0, "recommendation": "highly_recommended"},
+    {"rank": 9, "name": "docker", "type": "mcp_server", "score": 84.0, "recommendation": "recommended"},
+    {"rank": 10, "name": "postgres", "type": "mcp_server", "score": 82.0, "recommendation": "highly_recommended"},
+    {"rank": 11, "name": "fetch", "type": "mcp_server", "score": 82.0, "recommendation": "recommended"},
+    {"rank": 12, "name": "playwright", "type": "mcp_server", "score": 80.0, "recommendation": "recommended"},
+    {"rank": 13, "name": "memory", "type": "mcp_server", "score": 80.0, "recommendation": "recommended"},
+    {"rank": 14, "name": "sequential-thinking", "type": "mcp_server", "score": 78.0, "recommendation": "recommended"},
+    {"rank": 15, "name": "next-devtools", "type": "mcp_server", "score": 78.0, "recommendation": "recommended"},
+    {"rank": 16, "name": "github", "type": "mcp_server", "score": 76.0, "recommendation": "recommended"}
   ]
 }

@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "description": "MCP Server Registry — tracks discovered, configured, and available MCP servers for the ResearchOS development environment",
-  "last_discovered": "2026-07-04T17:50:33Z",
+  "last_discovered": "2026-07-04T18:30:00Z",
   "discovery_count": {
-    "mcp_servers": 5,
+    "mcp_servers": 12,
     "lsp_servers": 2,
     "formatters": 2,
     "linters": 2,
@@ -62,6 +62,76 @@
         "discovered_at": "2026-07-04T17:50:33Z",
         "health": "configured",
         "categories": ["browser_automation"]
+      },
+      {
+        "name": "filesystem",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T18:30:00Z",
+        "health": "configured",
+        "categories": ["filesystem", "core_development"]
+      },
+      {
+        "name": "fetch",
+        "type": "local",
+        "enabled": true,
+        "command": ["uvx", "mcp-server-fetch"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T18:30:00Z",
+        "health": "configured",
+        "categories": ["web", "data_fetching"]
+      },
+      {
+        "name": "memory",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T18:30:00Z",
+        "health": "configured",
+        "categories": ["knowledge_graph", "memory"]
+      },
+      {
+        "name": "next-devtools",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "next-devtools-mcp@latest"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T18:30:00Z",
+        "health": "configured",
+        "categories": ["frontend", "react", "nextjs"]
+      },
+      {
+        "name": "shadcn",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "shadcn@latest", "mcp"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T18:30:00Z",
+        "health": "configured",
+        "categories": ["frontend", "react", "ui_components"]
+      },
+      {
+        "name": "chrome-devtools",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T18:30:00Z",
+        "health": "configured",
+        "categories": ["frontend", "browser_debugging", "performance"]
+      },
+      {
+        "name": "docker",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "mcp-server-docker-npx"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T18:30:00Z",
+        "health": "configured",
+        "categories": ["devops", "containers"]
       }
     ]
   }
