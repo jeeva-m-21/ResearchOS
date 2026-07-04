@@ -1,5 +1,31 @@
 {
   "schema_version": "1.0",
   "description": "Improvement proposals with scoring and validation status",
-  "entries": []
+  "entries": [
+    {
+      "id": "P-2026-07-04-0",
+      "problem": "Auto-fix ruff issues across src/ and tests/",
+      "expected_benefit": "Cleaner code quality on E501/F841",
+      "implementation_cost": "low",
+      "risk": "low",
+      "rollback_strategy": "git checkout -- .",
+      "priority_score": 80,
+      "status": "pending",
+      "evidence": "Ruff check returned exit code 1 with E501/F841 errors"
+    },
+    {
+      "id": "R-2026-07-04",
+      "type": "reflection",
+      "report": {
+        "timestamp": "2026-07-04T17:25:47Z",
+        "what_was_accomplished": ["Evolution cycle executed"],
+        "what_failed": [],
+        "what_was_learned": ["Found 2 issues during analysis"],
+        "what_can_improve": [
+          "Add coverage tracking to evolution cycle",
+          "Automate prompt scoring based on success rate"
+        ]
+      }
+    }
+  ]
 }
