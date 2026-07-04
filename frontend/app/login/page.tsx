@@ -4,6 +4,8 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/lib/store/auth'
+import { Button } from '@/components/ui/button'
+import { Loader2, FlaskConical } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -30,23 +32,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-200">
+    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+      <div className="w-full max-w-sm animate-in">
+        <div className="rounded-xl bg-card p-8 shadow-sm border border-border">
+          {/* Logo */}
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-900">ResearchOS</h1>
-            <p className="mt-2 text-gray-600">Sign in to your account</p>
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary mb-4">
+              <FlaskConical className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">ResearchOS</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
+              <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
                 {error}
               </div>
             )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
                 Email
               </label>
               <input
@@ -55,13 +61,13 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="researcher@test.com"
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
                 Password
               </label>
               <input
@@ -70,31 +76,33 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="password123"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign in'
+              )}
+            </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/signup" className="font-medium text-primary hover:text-primary/80 transition-colors">
               Sign up
             </Link>
           </p>
 
-          <div className="mt-4 rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
+          <div className="mt-4 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground border border-border">
             <p className="font-medium mb-1">Test credentials:</p>
-            <p>Email: researcher@test.com</p>
-            <p>Password: password123</p>
+            <p className="font-mono">researcher@test.com / password123</p>
           </div>
         </div>
       </div>

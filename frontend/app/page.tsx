@@ -1,44 +1,79 @@
 import Link from 'next/link'
+import { FlaskConical, BookOpen, Search, ArrowRight } from 'lucide-react'
+
+const features = [
+  {
+    icon: FlaskConical,
+    title: 'Experiments',
+    description: 'Track and manage ML experiments with runs and metrics',
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
+  },
+  {
+    icon: BookOpen,
+    title: 'Notebooks',
+    description: 'Block-based research notebooks with code execution',
+    color: 'text-green-600',
+    bg: 'bg-green-50',
+  },
+  {
+    icon: Search,
+    title: 'Search',
+    description: 'Semantic search across all your research assets',
+    color: 'text-purple-600',
+    bg: 'bg-purple-50',
+  },
+]
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-b from-gray-50 to-white">
-      <h1 className="text-5xl font-bold text-gray-900">ResearchOS</h1>
-      <p className="mt-4 text-xl text-gray-600 max-w-md text-center">
-        The research operating system for AI/ML teams
-      </p>
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-muted/30">
+      <div className="text-center animate-in max-w-lg">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-6">
+          <FlaskConical className="h-8 w-8 text-primary-foreground" />
+        </div>
+        <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight">
+          ResearchOS
+        </h1>
+        <p className="mt-4 text-lg text-muted-foreground">
+          The research operating system for AI/ML teams
+        </p>
 
-      <div className="mt-10 flex gap-4">
-        <Link
-          href="/login"
-          className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-        >
-          Sign in
-        </Link>
-        <Link
-          href="/signup"
-          className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          Get started
-        </Link>
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/signup"
+            className="inline-flex items-center justify-center rounded-lg border border-border bg-card px-6 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors shadow-sm"
+          >
+            Get started
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </div>
       </div>
 
-      <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl">
-        <div className="text-center">
-          <div className="text-3xl mb-2">🧪</div>
-          <h3 className="font-semibold text-gray-900">Experiments</h3>
-          <p className="text-sm text-gray-500 mt-1">Track and manage ML experiments</p>
-        </div>
-        <div className="text-center">
-          <div className="text-3xl mb-2">📓</div>
-          <h3 className="font-semibold text-gray-900">Notebooks</h3>
-          <p className="text-sm text-gray-500 mt-1">Block-based research notebooks</p>
-        </div>
-        <div className="text-center">
-          <div className="text-3xl mb-2">🔍</div>
-          <h3 className="font-semibold text-gray-900">Search</h3>
-          <p className="text-sm text-gray-500 mt-1">Semantic search across all research</p>
-        </div>
+      <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl w-full">
+        {features.map((feature) => {
+          const Icon = feature.icon
+          return (
+            <div
+              key={feature.title}
+              className="rounded-xl bg-card p-5 border border-border shadow-sm hover:shadow-md transition-all"
+            >
+              <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${feature.bg} mb-3`}>
+                <Icon className={`h-5 w-5 ${feature.color}`} />
+              </div>
+              <h3 className="font-semibold text-foreground">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          )
+        })}
       </div>
     </main>
   )
