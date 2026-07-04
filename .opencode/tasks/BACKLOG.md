@@ -24,7 +24,7 @@ Task format:
 - notes: validate refresh_token in the request model
 
 ## T-003 — Fix events router bugs
-- status: TODO
+- status: DONE
 - deps: none
 - agents: @backend, @test
 - acceptance: POST /events/health returns {"redis": "connected"} or gracefully handled; ruff+mypy clean

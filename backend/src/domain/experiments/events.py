@@ -1,44 +1,50 @@
 """Experiment domain events"""
-from uuid import UUID
-from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from uuid import UUID
 
-class ExperimentStarted(BaseModel):
+from src.domain.shared.events import DomainEvent
+
+
+class ExperimentStarted(DomainEvent):
     """Event: Experiment started"""
     event_type: str = "experiment.started"
-    event_id: UUID = Field(default_factory=lambda: __import__('uuid').uuid4())
-    aggregate_id: UUID
     aggregate_type: str = "Experiment"
     version: int = 1
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
     experiment_id: UUID
     organization_id: UUID
     project_id: UUID
     started_by: UUID
 
-class MetricLogged(BaseModel):
-    """Event: Metric logged"""
-    event_type: str = "metric.logged"
-    event_id: UUID = Field(default_factory=lambda: __import__('uuid').uuid4())
-    aggregate_id: UUID
+
+class RunStarted(DomainEvent):
+    """Event: Run started"""
+    event_type: str = "run.started"
     aggregate_type: str = "Run"
     version: int = 1
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    run_id: UUID
+    experiment_id: UUID
+    organization_id: UUID
+    run_number: int
+    started_by: UUID
+
+
+class MetricLogged(DomainEvent):
+    """Event: Metric logged"""
+    event_type: str = "metric.logged"
+    aggregate_type: str = "Run"
+    version: int = 1
+    organization_id: UUID
     run_id: UUID
     experiment_id: UUID
     metric_key: str
     metric_value: float
     step: int
 
-class RunCompleted(BaseModel):
+
+class RunCompleted(DomainEvent):
     """Event: Run completed"""
     event_type: str = "run.completed"
-    event_id: UUID = Field(default_factory=lambda: __import__('uuid').uuid4())
-    aggregate_id: UUID
     aggregate_type: str = "Run"
-    version: int = 1
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
     run_id: UUID
     experiment_id: UUID
     status: str

@@ -1,18 +1,21 @@
 """Experiment endpoints"""
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
 from uuid import UUID, uuid4
-from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies.auth import (
-    get_current_user,
     get_current_org_with_membership,
-    require_role,
+    get_current_user,
 )
-from src.api.routes.auth import get_authenticated_user_dep
+from src.api.dependencies.events import get_event_producer
+from src.domain.experiments.events import ExperimentStarted, RunStarted
 from src.infrastructure.auth.jwt import TokenData
 from src.infrastructure.database import db
+from src.infrastructure.events.producer import EventProducer
 
 router = APIRouter()
+
 
 @router.post("/")
 async def create_experiment(
@@ -21,6 +24,7 @@ async def create_experiment(
     description: Optional[str] = None,
     user: TokenData = Depends(get_current_user),
     organization_id: UUID = Depends(get_current_org_with_membership),
+    event_producer: EventProducer = Depends(get_event_producer),
 ):
     """Create a new experiment"""
     # Verify project belongs to organization
@@ -33,13 +37,13 @@ async def create_experiment(
         project_id,
         organization_id
     )
-    
+
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found or access denied",
         )
-    
+
     # Create experiment
     experiment_id = uuid4()
     await db.execute(
@@ -56,7 +60,17 @@ async def create_experiment(
         description,
         user.user_id
     )
-    
+
+    # Emit experiment.started event
+    event = ExperimentStarted(
+        aggregate_id=experiment_id,
+        experiment_id=experiment_id,
+        organization_id=organization_id,
+        project_id=project_id,
+        started_by=user.user_id,
+    )
+    await event_producer.emit(event)
+
     return {"id": experiment_id, "name": name, "project_id": str(project_id)}
 
 @router.get("/{experiment_id}")
@@ -68,22 +82,25 @@ async def get_experiment(
     """Get experiment by ID"""
     experiment = await db.fetch_one(
         """
-        SELECT 
+        SELECT
             e.id, e.name, e.description, e.project_id,
             e.status, e.parameters, e.tags,
             e.created_at, e.updated_at
         FROM experiments e
-        WHERE e.id = $1 
+        WHERE e.id = $1
         AND e.organization_id = $2
         AND e.deleted_at IS NULL
         """,
         experiment_id,
         organization_id
     )
-    
+
     if not experiment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Experiment not found")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Experiment not found",
+        )
+
     return dict(experiment)
 
 @router.get("/{experiment_id}/runs")
@@ -95,7 +112,7 @@ async def list_runs(
     """List runs for experiment"""
     runs = await db.fetch_all(
         """
-        SELECT 
+        SELECT
             r.id, r.run_number, r.status, r.started_at,
             r.ended_at, r.duration_ms, r.git_commit,
             r.created_at
@@ -111,7 +128,7 @@ async def list_runs(
         experiment_id,
         organization_id
     )
-    
+
     return [dict(run) for run in runs]
 
 @router.post("/{experiment_id}/runs")
@@ -119,6 +136,7 @@ async def start_run(
     experiment_id: UUID,
     user: TokenData = Depends(get_current_user),
     organization_id: UUID = Depends(get_current_org_with_membership),
+    event_producer: EventProducer = Depends(get_event_producer),
 ):
     """Start a new run"""
     # Verify experiment exists and belongs to organization
@@ -131,13 +149,13 @@ async def start_run(
         experiment_id,
         organization_id
     )
-    
+
     if not experiment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Experiment not found",
         )
-    
+
     # Get next run number
     result = await db.fetch_one(
         """
@@ -148,10 +166,10 @@ async def start_run(
         """,
         experiment_id
     )
-    
+
     run_number = result["next_run_number"]
     run_id = uuid4()
-    
+
     await db.execute(
         """
         INSERT INTO runs (
@@ -165,5 +183,16 @@ async def start_run(
         run_number,
         user.user_id
     )
-    
+
+    # Emit run.started event
+    event = RunStarted(
+        aggregate_id=run_id,
+        run_id=run_id,
+        experiment_id=experiment_id,
+        organization_id=organization_id,
+        run_number=run_number,
+        started_by=user.user_id,
+    )
+    await event_producer.emit(event)
+
     return {"run_id": str(run_id), "run_number": run_number}
