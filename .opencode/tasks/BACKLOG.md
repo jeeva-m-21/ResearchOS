@@ -57,3 +57,24 @@ Task format:
 - agents: @backend, @db, @test
 - acceptance: GET /v1/search?q=transformer returns 200 with results; type filter works; suggestions work; 5 tests pass
 - notes: hybrid search (vector + BM25 + RRF), suggestions via trigram, 10 seed nodes, 5 tests
+
+## T-008 — Notebooks: DB migration + CRUD endpoints
+- status: TODO
+- deps: none
+- agents: @db, @backend, @test
+- acceptance: POST /v1/notebooks creates a notebook; GET returns it; 3+ tests pass
+- notes: migration for notebooks + blocks tables (see schema docs); basic create/list/get endpoints
+
+## T-009 — Event system: DLQ retry + consumer monitoring
+- status: TODO
+- deps: T-004
+- agents: @backend, @test
+- acceptance: DLQ events can be retried via API endpoint; consumer health reports lag
+- notes: wire DLQ retry into /v1/events/retry-dlq; add consumer health/status endpoint
+
+## T-010 — SDK: Sync client for offline→online push
+- status: TODO
+- deps: T-006
+- agents: @sdk, @backend, @test
+- acceptance: SDK sync() pushes WAL events to /v1/events/batch and returns success
+- notes: build Sync class using httpx; integration test with running backend

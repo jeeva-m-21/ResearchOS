@@ -3,6 +3,13 @@
 Usage:
     docker exec researchos-backend-1 python tests/seed_search_data.py
 """
+import sys
+
+# PYTHONPATH is set to /app/src but importing "src" requires the parent /app
+# to be in sys.path so Python can find /app/src/__init__.py.
+if "/app" not in sys.path:
+    sys.path.insert(0, "/app")
+
 import asyncio
 
 import asyncpg

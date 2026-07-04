@@ -148,7 +148,7 @@ class SearchService:
 
     def _rrf_fusion(
         self,
-        *result_lists: list,
+        *result_lists: list[tuple[UUID, float]],
     ) -> list[UUID]:
         """Reciprocal Rank Fusion.
 
@@ -157,7 +157,7 @@ class SearchService:
         scores: dict[UUID, float] = defaultdict(float)
 
         for results in result_lists:
-            for rank, (doc_id, _) in enumerate(results, 1):  # type: ignore[arg-type]
+            for rank, (doc_id, _) in enumerate(results, 1):
                 scores[doc_id] += 1.0 / (self.rrf_k + rank)
 
         # Sort descending by fused score

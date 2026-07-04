@@ -11,7 +11,7 @@ from src.infrastructure.database import db
 router = APIRouter()
 
 
-def get_search_service() -> SearchService:  # type: ignore[misc]
+def get_search_service() -> SearchService:
     """Dependency: build SearchService with local embedding adapter."""
     adapter = LocalEmbeddingAdapter()
     return SearchService(db, adapter)
@@ -50,7 +50,7 @@ async def suggestions(
     organization_id: UUID = Query(
         ..., description="Organization ID for tenant isolation"
     ),
-):
+) -> list[str]:
     """Autocomplete suggestions using trigram similarity."""
     rows = await db.fetch_all(
         """
