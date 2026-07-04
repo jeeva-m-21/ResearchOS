@@ -10,8 +10,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -48,6 +48,7 @@ htmlcov/
 # Type checking
 .mypy_cache/
 .ruff_cache/
+*.tsbuildinfo
 
 # Build
 .next/
@@ -78,3 +79,6 @@ Thumbs.db
 *.bak
 *.tmp
 .cache/
+
+# Subagent working memory
+backend/.opencode/

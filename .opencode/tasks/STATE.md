@@ -2,7 +2,16 @@
 Last updated: 2026-07-04
 
 ## Current task
-T-012 — MCP & Plugin Ecosystem Integration Module — DONE
+T-014 — Frontend: Dashboard + navigation shell — TODO
+
+## Plan
+1. Build sidebar with nav links (Dashboard, Experiments, Notebooks, Search)
+2. Topbar with user menu (avatar, name, logout)
+3. Org switcher dropdown
+4. Responsive sidebar (collapsible on mobile)
+
+## Log
+- 2026-07-04: T-013 DONE. Frontend auth UI (login page, signup page, Zustand auth store, Axios JWT interceptor, ProtectedRoute wrapper, dashboard layout with sidebar, updated landing page).
 
 ## Log
 - 2026-07-04: T-001 DONE. Commit dc9edc3.

@@ -92,3 +92,38 @@ Task format:
 - agents: @architect, @backend, @test
 - acceptance: python scripts/ecosystem.py --full runs and validates; 6 acceptance tests pass
 - notes: scripts/{discovery,evaluator,ecosystem}.py created. .opencode/memory/{mcp_registry,capabilities}.json seeded. Integrated into learn.py. 24/24 tests pass, ruff + mypy clean. Commit 588739a.
+
+## T-013 — Frontend: Auth UI (login/signup + JWT management)
+- status: DONE
+- deps: none
+- agents: @frontend, @test
+- acceptance: User can log in with test credentials, JWT stored in Zustand, protected routes redirect to login
+- notes: Login page (frontend/app/login/page.tsx), signup page (frontend/app/signup/page.tsx), Zustand auth store (frontend/lib/store/auth.ts), Axios interceptor (frontend/lib/api/client.ts), ProtectedRoute component (frontend/components/auth/ProtectedRoute.tsx), dashboard layout with sidebar (frontend/app/dashboard/layout.tsx), updated landing page.
+
+## T-014 — Frontend: Dashboard + navigation shell
+- status: TODO
+- deps: T-013
+- agents: @frontend
+- acceptance: Sidebar with nav links, topbar with user menu, org switcher, empty dashboard page
+- notes: App shell layout, responsive sidebar, breadcrumbs, user dropdown
+
+## T-015 — Frontend: Experiments CRUD UI
+- status: TODO
+- deps: T-014
+- agents: @frontend
+- acceptance: List experiments, create new, view runs + metric chart
+- notes: Recharts already installed. Backend is 100% done.
+
+## T-016 — Frontend: Notebooks CRUD UI
+- status: TODO
+- deps: T-014
+- agents: @frontend
+- acceptance: List notebooks, create new, view notebook with block list
+- notes: CodeMirror already installed. Backend is 100% done.
+
+## T-017 — Frontend: Search UI
+- status: TODO
+- deps: T-014
+- agents: @frontend
+- acceptance: Search bar in nav, results page with type filters
+- notes: Backend search is 100% done with pgvector HNSW + hybrid.
