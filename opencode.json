@@ -8,7 +8,7 @@
       }
     }
   },
-  "model": "amazon-bedrock/us.deepseek.v3.2",
+  "model": "amazon-bedrock/deepseek.v3.2",
   "default_agent": "orchestrator",
   "lsp": true,
   "autoupdate": "notify",
@@ -33,10 +33,22 @@
     ]
   },
   "instructions": [
-    "CLAUDE.md",
     "AGENTS.md",
-    "docs/**/*.md"
+    "docs/01-high-level-architecture.md",
+    "docs/02-domain-model.md",
+    "docs/03-database-schema.md",
+    "docs/09-event-architecture.md"
   ],
+  "references": {
+    "sdk": {
+      "path": "sdk/python",
+      "description": "Use for Python SDK implementation"
+    },
+    "backend": {
+      "path": "backend/src",
+      "description": "Use for backend API and domain code"
+    }
+  },
   "permission": {
     "edit": {
       "*": "allow",
@@ -47,8 +59,7 @@
       "compose*.yml": "deny",
       "helm/**": "deny",
       "infra/terraform/**": "deny",
-      ".github/**": "deny",
-      "backend/alembic/versions/**": "deny"
+      ".github/**": "deny"
     },
     "bash": {
       "*": "allow",

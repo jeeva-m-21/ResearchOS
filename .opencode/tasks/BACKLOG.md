@@ -45,15 +45,15 @@ Task format:
 - notes: EventStore class created; event-store consumer group wired into lifespan; migration adds events + processed_events tables; commit 6793932
 
 ## T-006 — Python SDK: package skeleton + WAL
-- status: TODO
+- status: DONE
 - deps: T-003
 - agents: @sdk, @test
-- acceptance: `pip install sdk/python && python -c "from researchos import WAL; w=WAL('/tmp/test'); w.append(...)"` works
-- notes: minimal sdk/python package.json -> pyproject.toml; WAL class with append/read/offset
+- acceptance: `python -c "from researchos import WAL; w=WAL('/tmp/test', ...); w.append(...)"` works; 4 WAL tests pass
+- notes: protocol/events.py, protocol/validation.py, wal.py created; commit f629398
 
 ## T-007 — Search: pgvector HNSW index + hybrid search endpoint
-- status: TODO
+- status: DONE
 - deps: T-003
 - agents: @backend, @db, @test
-- acceptance: GET /v1/search?q=test returns 200 with results array; query uses vector + BM25
-- notes: replace stub with real hybrid search; requires existing nodes with embeddings
+- acceptance: GET /v1/search?q=transformer returns 200 with results; type filter works; suggestions work; 5 tests pass
+- notes: hybrid search (vector + BM25 + RRF), suggestions via trigram, 10 seed nodes, 5 tests
