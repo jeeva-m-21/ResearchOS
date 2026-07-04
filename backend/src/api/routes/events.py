@@ -5,29 +5,24 @@ These endpoints provide event streaming, replay, and monitoring capabilities.
 """
 
 import asyncio
-from typing import Optional, List
-from uuid import UUID
 import json
+import os
+from typing import List, Optional
+from uuid import UUID
 
-# FastAPI imports will be resolved by runtime
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from redis.asyncio import Redis
 
-from src.api.dependencies.auth import get_current_user, get_current_org
-from src.infrastructure.events.service import EventsService, EventsServiceFactory
-from src.infrastructure.events.producer import EventProducer
-from src.domain.shared.events import DomainEvent
+from src.api.dependencies.auth import get_current_org, get_current_user
 from src.domain.experiments.events import ExperimentStarted, MetricLogged, RunCompleted
+from src.domain.shared.events import DomainEvent
 from src.infrastructure.auth.jwt import TokenData
-
-# Import Redis dependency
-# We'll implement get_redis dependency inline
+from src.infrastructure.events.producer import EventProducer
+from src.infrastructure.events.service import EventsService, EventsServiceFactory
 
 router = APIRouter()
 
-# Simulated Redis connection - in production, this would be configured
-from redis.asyncio import Redis
-import os
 
 async def get_redis() -> Redis:
     """Get Redis connection"""
@@ -66,7 +61,7 @@ async def emit_event(
 ) -> dict:
     """
     Emit a domain event.
-    
+
     This is primarily used by internal services and SDK.
     Most application events are emitted automatically via domain operations.
     """
@@ -74,9 +69,9 @@ async def emit_event(
         # Ensure event has organization context
         if not hasattr(event, 'organization_id'):
             event.organization_id = organization_id
-        
+
         stream_id = await producer.emit(event)
-        
+
         return {
             "status": "success",
             "event_id": str(event.event_id),
@@ -95,7 +90,7 @@ async def emit_event_batch(
 ) -> dict:
     """
     Emit multiple domain events in batch.
-    
+
     Used by SDK for offline->online sync.
     """
     try:
@@ -103,9 +98,9 @@ async def emit_event_batch(
         for event in events:
             if not hasattr(event, 'organization_id'):
                 event.organization_id = organization_id
-        
+
         stream_ids = await producer.emit_batch(events)
-        
+
         return {
             "status": "success",
             "count": len(stream_ids),
@@ -126,37 +121,25 @@ async def stream_events(
 ):
     """
     Stream events via Server-Sent Events (SSE).
-    
+
     Clients can subscribe to real-time event streams.
     Filter by event types and start from specific event.
     """
-    
+
     async def event_generator():
         # This is a simplified SSE implementation
         # In production, would use Redis Pub/Sub or WebSockets
-        import time
-        
-        # Initialize last event position
-        last_id = since_event_id or "0-0"
-        
+
         while True:
             try:
-                # Get events since last_id
-                # This is a placeholder - would query Redis Stream
-                events = []
-                
-                if events:
-                    for event in events:
-                        yield f"data: {json.dumps(event.model_dump())}\n\n"
-                        last_id = event.event_id
-                
-                # Wait before next poll
+                # TODO: Query Redis Stream for events since last position
+                # and yield them as SSE messages
                 await asyncio.sleep(1)
-                
+
             except Exception as e:
                 yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
                 break
-    
+
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
@@ -205,7 +188,7 @@ async def replay_events(
 ) -> dict:
     """
     Replay events (admin only).
-    
+
     Can replay events within time range or specific event types.
     Use with caution - can cause duplicate processing.
     """
@@ -214,10 +197,10 @@ async def replay_events(
         to_timestamp=to_timestamp,
         event_types=event_types,
     )
-    
+
     if result["status"] == "not_implemented":
         raise HTTPException(status_code=501, detail=result["message"])
-    
+
     return result
 
 
@@ -245,7 +228,7 @@ async def retry_dlq_events(
 ) -> dict:
     """
     Retry events from Dead Letter Queue.
-    
+
     Admin-only endpoint to retry failed event processing.
     """
     # Placeholder - would implement DLQ retry logic
@@ -263,7 +246,7 @@ async def get_event_schema(
 ) -> dict:
     """
     Get event schema(s).
-    
+
     Returns JSON Schema for event types.
     Useful for SDK validation and documentation.
     """
@@ -272,16 +255,20 @@ async def get_event_schema(
         "experiment.started": ExperimentStarted.schema(),
         "metric.logged": MetricLogged.schema(),
         "run.completed": RunCompleted.schema(),
-        "domain_event": DomainEvent.model_json_schema() if hasattr(DomainEvent, 'model_json_schema') else DomainEvent.schema(),
+        "domain_event": (
+            DomainEvent.model_json_schema()
+            if hasattr(DomainEvent, "model_json_schema")
+            else DomainEvent.schema()
+        ),
     }
-    
+
     if event_type:
         if event_type in schemas:
             return schemas[event_type]
         else:
             # Return generic domain event schema
             return schemas["domain_event"]
-    
+
     return {"schemas": schemas}
 
 
@@ -289,12 +276,6 @@ async def get_event_schema(
 async def list_event_types() -> List[dict]:
     """List all available event types"""
     event_types = [
-        {
-            "type": "experiment.started",
-            "description": "Experiment was created and started",
-            "aggregate": "Experiment",
-            "version": 1,
-        },
         {
             "type": "experiment.started",
             "description": "Experiment was created and started",
@@ -338,7 +319,7 @@ async def list_event_types() -> List[dict]:
             "version": 1,
         },
     ]
-    
+
     return event_types
 
 
@@ -351,12 +332,12 @@ async def test_emit_event(
 ) -> dict:
     """
     Test endpoint to emit sample events.
-    
+
     Only available in development/staging environments.
     """
-    from uuid import uuid4
     from datetime import datetime
-    
+    from uuid import uuid4
+
     # Sample event data based on type
     event_data = {
         "experiment.started": {
@@ -383,7 +364,7 @@ async def test_emit_event(
             "version": 1,
             "timestamp": datetime.utcnow(),
             "organization_id": organization_id,
-            "created_by": user_id.user_id,
+            "created_by": user_data.user_id,
             "run_id": uuid4(),
             "experiment_id": uuid4(),
             "metric_key": "accuracy",
@@ -391,14 +372,14 @@ async def test_emit_event(
             "step": 100,
         },
     }
-    
+
     if event_type not in event_data:
         available_types = list(event_data.keys())
         raise HTTPException(
             status_code=400,
             detail=f"Unknown event type. Available types: {available_types}"
         )
-    
+
     # Create event object
     if event_type == "experiment.started":
         event = ExperimentStarted(**event_data[event_type])
@@ -406,10 +387,10 @@ async def test_emit_event(
         event = MetricLogged(**event_data[event_type])
     else:
         event = DomainEvent(**event_data[event_type])
-    
+
     # Emit event
     stream_id = await producer.emit(event)
-    
+
     return {
         "status": "success",
         "message": f"Test {event_type} event emitted",
