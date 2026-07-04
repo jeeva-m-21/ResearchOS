@@ -1,5 +1,5 @@
 """Experiment endpoints"""
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -72,6 +72,52 @@ async def create_experiment(
     await event_producer.emit(event)
 
     return {"id": experiment_id, "name": name, "project_id": str(project_id)}
+
+@router.get("/")
+async def list_experiments(
+    project_id: Optional[UUID] = None,
+    limit: int = 100,
+    offset: int = 0,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+) -> list[dict[str, Any]]:
+    """List experiments, optionally filtered by project"""
+    if project_id:
+        experiments = await db.fetch_all(
+            """
+            SELECT
+                e.id, e.name, e.description, e.project_id,
+                e.status, e.created_at, e.updated_at
+            FROM experiments e
+            WHERE e.organization_id = $1
+            AND e.project_id = $2
+            AND e.deleted_at IS NULL
+            ORDER BY e.created_at DESC
+            LIMIT $3 OFFSET $4
+            """,
+            organization_id,
+            project_id,
+            limit,
+            offset
+        )
+    else:
+        experiments = await db.fetch_all(
+            """
+            SELECT
+                e.id, e.name, e.description, e.project_id,
+                e.status, e.created_at, e.updated_at
+            FROM experiments e
+            WHERE e.organization_id = $1
+            AND e.deleted_at IS NULL
+            ORDER BY e.created_at DESC
+            LIMIT $2 OFFSET $3
+            """,
+            organization_id,
+            limit,
+            offset
+        )
+
+    return [dict(exp) for exp in experiments]
 
 @router.get("/{experiment_id}")
 async def get_experiment(
