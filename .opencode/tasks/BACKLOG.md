@@ -87,8 +87,8 @@ Task format:
 - notes: Evolution cycle (Observe-Analyze-Plan-Implement-Validate-Reflect-Learn-Persist). Memory schemas in .opencode/memory/. Orchestrator prompt updated. Commits caae373 + 818c832.
 
 ## T-012 — MCP & Plugin Ecosystem Integration Module
-- status: DOING
+- status: DONE
 - deps: T-011
 - agents: @architect, @backend, @test
-- acceptance: python scripts/ecosystem.py --discover scans MCP servers + plugins and writes mcp_registry.json; python scripts/ecosystem.py --evaluate scores capabilities; ruff + mypy clean
-- notes: Discovery scanner for MCP servers, npm/pip plugins, git hooks, LSP servers. Evaluation engine scoring on compatibility, security, maintenance, relevance. Registry persists to .opencode/memory/{mcp_registry.json,capabilities.json}. Integrated into learn.py observe phase.
+- acceptance: python scripts/ecosystem.py --full runs and validates; 6 acceptance tests pass
+- notes: scripts/{discovery,evaluator,ecosystem}.py created. .opencode/memory/{mcp_registry,capabilities}.json seeded. Integrated into learn.py. 24/24 tests pass, ruff + mypy clean. Commit 588739a.
