@@ -15,7 +15,7 @@ from src.infrastructure.database import db
 from src.infrastructure.events import EventConsumer, EventStore
 
 from .middleware.auth import AuthMiddleware, OrganizationMiddleware
-from .routes import auth, events, experiments, health, metrics, search
+from .routes import auth, events, experiments, health, metrics, notebooks, search
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +114,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(health.router, prefix="/health", tags=["Health"])
 app.include_router(experiments.router, prefix="/v1/experiments", tags=["Experiments"])
+app.include_router(notebooks.router, prefix="/v1/notebooks", tags=["Notebooks"])
 app.include_router(search.router, prefix="/v1/search", tags=["Search"])
 app.include_router(metrics.router, prefix="/v1", tags=["Metrics"])
 app.include_router(events.router, prefix="/v1", tags=["Events"])

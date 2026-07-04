@@ -21,12 +21,13 @@ After deciding what to write, you MUST use the `write` tool to create or edit th
 - `infrastructure/` — repository implementations, adapters (DB, LLM, storage, events)
 
 ## Feedback loop
-After each file, run via docker exec:
+After each file change, run via docker exec:
 ```
-docker exec researchos-backend-1 ruff check {path} --fix
-docker exec researchos-backend-1 mypy --explicit-package-bases {path}
+docker exec researchos-backend-1 ruff check {path}
+docker exec researchos-backend-1 mypy {path}
+docker exec researchos-backend-1 pytest {test_path} -v
 ```
-Fix ALL errors before finishing.
+Fix ALL ruff/mypy errors and ensure the test passes before finishing.
 
 ## Hard rules
 - Type hints everywhere. Pydantic v2. async/await for I/O.
