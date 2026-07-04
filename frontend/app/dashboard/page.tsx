@@ -50,7 +50,7 @@ function StatCard({
 }) {
   return (
     <Link href={href}>
-      <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div className="rounded-xl bg-card p-5 shadow-sm border border-border hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{title}</p>
           <Icon className={`h-5 w-5 ${color}`} />
@@ -100,27 +100,27 @@ export default function DashboardHome() {
           value={loadingExperiments ? '...' : (experimentsCount ?? 0)}
           icon={FlaskConical}
           href="/dashboard/experiments"
-          color="text-blue-600"
+          color="text-foreground"
         />
         <StatCard
           title="Notebooks"
           value={loadingNotebooks ? '...' : (notebooksCount ?? 0)}
           icon={BookOpen}
           href="/dashboard/notebooks"
-          color="text-green-600"
+          color="text-foreground"
         />
         <StatCard
           title="Papers"
           value={0}
           icon={FileText}
           href="/dashboard/papers"
-          color="text-purple-600"
+          color="text-foreground"
         />
       </div>
 
       {/* Organization info */}
       {organizations.length > 0 && (
-        <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-200">
+        <div className="rounded-xl bg-card p-5 shadow-sm border border-border">
           <h2 className="text-lg font-semibold text-foreground">Organizations</h2>
           <div className="mt-3 space-y-2">
             {organizations.map((org) => (
@@ -138,18 +138,18 @@ export default function DashboardHome() {
       )}
 
       {/* Quick actions */}
-      <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-200">
+      <div className="rounded-xl bg-card p-5 shadow-sm border border-border">
         <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
         <div className="mt-3 flex flex-wrap gap-3">
           <Link
             href="/dashboard/experiments"
-            className="rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+            className="rounded-lg bg-accent px-4 py-2 text-sm text-accent-foreground hover:bg-secondary transition-colors"
           >
             New Experiment
           </Link>
           <Link
             href="/dashboard/notebooks"
-            className="rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 hover:bg-green-100 transition-colors"
+            className="rounded-lg bg-accent px-4 py-2 text-sm text-accent-foreground hover:bg-secondary transition-colors"
           >
             New Notebook
           </Link>

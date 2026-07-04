@@ -18,7 +18,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 
   if (!mounted) {
     return (
-      <div className={cn('h-9 w-9 rounded-lg border border-border bg-transparent', className)} />
+      <div className={cn('h-11 w-11 rounded-full border border-border bg-background shadow-lg', className)} />
     )
   }
 
@@ -28,10 +28,11 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className={cn(
-        'relative inline-flex h-9 w-9 items-center justify-center rounded-lg',
-        'border border-border bg-transparent',
+        'relative inline-flex h-11 w-11 items-center justify-center',
+        'rounded-full border border-border',
+        'bg-background shadow-lg shadow-black/10 dark:shadow-white/5',
         'hover:bg-accent hover:text-accent-foreground',
-        'transition-colors duration-200',
+        'transition-all duration-200 hover:scale-105 active:scale-95',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className,
       )}

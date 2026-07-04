@@ -133,7 +133,7 @@ export default function RunDetailPage() {
 
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Activity className="h-6 w-6 text-blue-600" />
+        <Activity className="h-6 w-6 text-foreground" />
         <h1 className="text-2xl font-bold text-foreground">Run Details</h1>
         <span className="text-muted-foreground text-sm ml-2">ID: {runId.slice(0, 8)}...</span>
       </div>
@@ -147,8 +147,8 @@ export default function RunDetailPage() {
 
       {/* Error */}
       {isError && (
-        <div className="rounded-xl bg-red-50 p-4 border border-red-200">
-          <p className="text-sm text-red-600">Failed to load metrics.</p>
+        <div className="rounded-xl bg-destructive/10 p-4 border border-destructive/20">
+          <p className="text-sm text-destructive">Failed to load metrics.</p>
         </div>
       )}
 

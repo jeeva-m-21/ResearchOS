@@ -39,20 +39,20 @@ interface StatusBadgeProps {
 }
 
 const statusConfig: Record<StatusType, { label: string; color: string; Icon?: any }> = {
-  running: { label: 'Running', color: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950', Icon: Play },
-  active: { label: 'Active', color: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950', Icon: Play },
-  completed: { label: 'Completed', color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950', Icon: CheckCircle2 },
-  success: { label: 'Success', color: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950', Icon: CheckCircle2 },
-  failed: { label: 'Failed', color: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950', Icon: XCircle },
-  error: { label: 'Error', color: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950', Icon: XCircle },
-  paused: { label: 'Paused', color: 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950', Icon: Pause },
-  pending: { label: 'Pending', color: 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-950', Icon: Clock },
-  created: { label: 'Created', color: 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900', Icon: Clock },
-  draft: { label: 'Draft', color: 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900', Icon: Clock },
-  published: { label: 'Published', color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950', Icon: CheckCircle2 },
-  in_review: { label: 'In Review', color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-950', Icon: AlertCircle },
-  archived: { label: 'Archived', color: 'text-gray-500 bg-gray-100 dark:text-gray-500 dark:bg-gray-800', Icon: Clock },
-  cancelled: { label: 'Cancelled', color: 'text-gray-500 bg-gray-100 dark:text-gray-500 dark:bg-gray-800', Icon: XCircle },
+  running: { label: 'Running', color: 'text-foreground bg-accent', Icon: Play },
+  active: { label: 'Active', color: 'text-foreground bg-accent', Icon: Play },
+  completed: { label: 'Completed', color: 'text-secondary-foreground bg-secondary', Icon: CheckCircle2 },
+  success: { label: 'Success', color: 'text-foreground bg-accent', Icon: CheckCircle2 },
+  failed: { label: 'Failed', color: 'text-muted-foreground bg-muted', Icon: XCircle },
+  error: { label: 'Error', color: 'text-muted-foreground bg-muted', Icon: XCircle },
+  paused: { label: 'Paused', color: 'text-secondary-foreground bg-secondary', Icon: Pause },
+  pending: { label: 'Pending', color: 'text-muted-foreground bg-muted', Icon: Clock },
+  created: { label: 'Created', color: 'text-muted-foreground bg-muted', Icon: Clock },
+  draft: { label: 'Draft', color: 'text-muted-foreground bg-muted', Icon: Clock },
+  published: { label: 'Published', color: 'text-foreground bg-accent', Icon: CheckCircle2 },
+  in_review: { label: 'In Review', color: 'text-secondary-foreground bg-secondary', Icon: AlertCircle },
+  archived: { label: 'Archived', color: 'text-muted-foreground bg-muted', Icon: Clock },
+  cancelled: { label: 'Cancelled', color: 'text-muted-foreground bg-muted', Icon: XCircle },
 }
 
 export function StatusBadge({ status, className, dotOnly }: StatusBadgeProps) {

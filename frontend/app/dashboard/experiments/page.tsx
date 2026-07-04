@@ -36,25 +36,25 @@ function CreateExperimentDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 mx-4">
+      <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md p-6 mx-4">
         <h2 className="text-lg font-semibold mb-4">Create Experiment</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               placeholder="My Experiment"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               rows={3}
               placeholder="Optional description"
             />
@@ -79,7 +79,7 @@ function CreateExperimentDialog({
           </div>
         </div>
         {mutation.isError && (
-          <p className="mt-3 text-sm text-red-600">
+          <p className="mt-3 text-sm text-destructive">
             Error: {(mutation.error as Error)?.message || 'Failed to create experiment'}
           </p>
         )}
@@ -90,19 +90,19 @@ function CreateExperimentDialog({
 
 function ExperimentCard({ experiment }: { experiment: Experiment }) {
   const statusColors: Record<string, string> = {
-    created: 'bg-yellow-100 text-yellow-800',
-    running: 'bg-blue-100 text-blue-800',
-    paused: 'bg-gray-100 text-gray-800',
-    completed: 'bg-green-100 text-green-800',
-    failed: 'bg-red-100 text-red-800',
-    cancelled: 'bg-gray-100 text-gray-800',
+    created: 'bg-muted text-muted-foreground',
+    running: 'bg-accent text-accent-foreground',
+    paused: 'bg-muted text-muted-foreground',
+    completed: 'bg-secondary text-secondary-foreground',
+    failed: 'bg-destructive/10 text-destructive',
+    cancelled: 'bg-muted text-muted-foreground',
   }
 
-  const statusColor = statusColors[experiment.status] || 'bg-gray-100 text-gray-800'
+  const statusColor = statusColors[experiment.status] || 'bg-muted text-muted-foreground'
 
   return (
     <Link href={`/dashboard/experiments/${experiment.id}`}>
-      <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
+      <div className="rounded-xl bg-card p-5 shadow-sm border border-border hover:shadow-md hover:border-foreground/20 transition-all cursor-pointer">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground truncate">{experiment.name}</h3>
@@ -138,7 +138,7 @@ export default function ExperimentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FlaskConical className="h-6 w-6 text-blue-600" />
+          <FlaskConical className="h-6 w-6 text-foreground" />
           <h1 className="text-2xl font-bold text-foreground">Experiments</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -159,8 +159,8 @@ export default function ExperimentsPage() {
 
       {/* Error state */}
       {isError && (
-        <div className="rounded-xl bg-red-50 p-4 border border-red-200">
-          <p className="text-sm text-red-600">
+        <div className="rounded-xl bg-destructive/10 p-4 border border-destructive/20">
+          <p className="text-sm text-destructive">
             Error loading experiments: {(error as Error)?.message || 'Unknown error'}
           </p>
         </div>
@@ -175,7 +175,7 @@ export default function ExperimentsPage() {
 
       {/* Empty state */}
       {!isLoading && !isError && experiments?.length === 0 && (
-        <div className="rounded-xl bg-white p-12 shadow-sm border border-gray-200 text-center">
+        <div className="rounded-xl bg-card p-12 shadow-sm border border-border text-center">
           <FlaskConical className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
           <h3 className="text-lg font-medium text-foreground">No experiments yet</h3>
           <p className="text-muted-foreground mt-1">Create your first experiment to track runs and metrics.</p>
