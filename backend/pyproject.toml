@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "researchos-backend"
+version = "1.0.0"
+description = "ResearchOS Backend API"
+authors = ["ResearchOS Team <team@researchos.ai>"]
+readme = "README.md"
+packages = [{include = "src", from = "backend"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+pydantic = {extras = ["email"], version = "^2.5.0"}
+email-validator = "^2.1.0"
+pydantic-settings = "^2.1.0"
+asyncpg = "^0.29.0"
+redis = "^5.0.0"
+python-multipart = "^0.0.6"
+prometheus-client = "^0.19.0"
+opentelemetry-api = "^1.22.0"
+opentelemetry-instrumentation-fastapi = "^0.43b0"
+alembic = "^1.13.0"
+httpx = "^0.26.0"
+sqlalchemy = "^2.0.0"
+psycopg2-binary = "^2.9.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+cryptography = "^42.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.23.0"
+pytest-cov = "^4.1.0"
+black = "^24.1.0"
+ruff = "^0.1.0"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "N", "W"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true

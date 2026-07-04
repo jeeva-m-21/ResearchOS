@@ -1,0 +1,43 @@
+# Default values for researchos
+namespace:
+  create: true
+  name: researchos
+
+backend:
+  replicaCount: 3
+  image:
+    repository: researchos/backend
+    tag: "1.0.0"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: researchos/frontend
+    tag: "1.0.0"
+  service:
+    type: ClusterIP
+    port: 3000
+
+postgresql:
+  enabled: true
+  auth:
+    database: researchos
+
+redis:
+  enabled: true
+  auth:
+    enabled: true
+
+ingress:
+  enabled: true
+  className: nginx
