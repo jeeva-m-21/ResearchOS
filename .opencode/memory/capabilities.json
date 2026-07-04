@@ -1,0 +1,170 @@
+{
+  "schema_version": "1.0",
+  "description": "Capability Graph — tracks all discovered capabilities, their scores, rankings, and recommended use cases",
+  "last_evaluated": "2026-07-04T17:50:35Z",
+  "capabilities": [
+    {
+      "name": "context7",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["documentation"],
+      "enabled": true,
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "health": "configured",
+      "score": 86.0,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 90, "security": 90, "maintenance": 85,
+        "documentation": 85, "community": 70, "performance": 85,
+        "reliability": 85, "relevance": 90, "productivity_impact": 90,
+        "integration_complexity": 90
+      }
+    },
+    {
+      "name": "postgres",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["database"],
+      "enabled": true,
+      "command": ["uvx", "postgres-mcp", "--access-mode=restricted"],
+      "health": "configured",
+      "score": 82.0,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 90, "security": 80, "maintenance": 80,
+        "documentation": 75, "community": 75, "performance": 80,
+        "reliability": 80, "relevance": 90, "productivity_impact": 85,
+        "integration_complexity": 80
+      }
+    },
+    {
+      "name": "ruff",
+      "provider": "lsp",
+      "type": "lsp_server",
+      "category": ["core_development"],
+      "score": 93.8,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 95, "security": 95, "maintenance": 95,
+        "documentation": 90, "community": 90, "performance": 95,
+        "reliability": 95, "relevance": 95, "productivity_impact": 90,
+        "integration_complexity": 90
+      }
+    },
+    {
+      "name": "playwright",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["browser_automation"],
+      "enabled": true,
+      "command": ["npx", "-y", "@playwright/mcp@latest"],
+      "health": "configured",
+      "score": 80.0,
+      "recommendation": "recommended",
+      "dimensions": {
+        "compatibility": 85, "security": 80, "maintenance": 85,
+        "documentation": 85, "community": 90, "performance": 75,
+        "reliability": 80, "relevance": 70, "productivity_impact": 75,
+        "integration_complexity": 80
+      }
+    },
+    {
+      "name": "mypy",
+      "provider": "lsp",
+      "type": "lsp_server",
+      "category": ["core_development"],
+      "score": 85.0,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 85, "security": 90, "maintenance": 90,
+        "documentation": 85, "community": 85, "performance": 70,
+        "reliability": 80, "relevance": 90, "productivity_impact": 85,
+        "integration_complexity": 75
+      }
+    },
+    {
+      "name": "black",
+      "provider": "cli",
+      "type": "formatter",
+      "category": ["core_development"],
+      "score": 85.2,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 90, "security": 90, "maintenance": 85,
+        "documentation": 85, "community": 85, "performance": 85,
+        "reliability": 90, "relevance": 80, "productivity_impact": 75,
+        "integration_complexity": 85
+      }
+    },
+    {
+      "name": "sequential-thinking",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["core_development"],
+      "enabled": true,
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "health": "configured",
+      "score": 78.0,
+      "recommendation": "recommended",
+      "dimensions": {
+        "compatibility": 85, "security": 85, "maintenance": 75,
+        "documentation": 70, "community": 65, "performance": 80,
+        "reliability": 80, "relevance": 80, "productivity_impact": 80,
+        "integration_complexity": 80
+      }
+    },
+    {
+      "name": "github",
+      "provider": "mcp",
+      "type": "mcp_server",
+      "category": ["source_control"],
+      "enabled": true,
+      "url": "https://api.githubcopilot.com/mcp/",
+      "health": "configured",
+      "score": 76.0,
+      "recommendation": "recommended",
+      "dimensions": {
+        "compatibility": 80, "security": 85, "maintenance": 85,
+        "documentation": 75, "community": 90, "performance": 70,
+        "reliability": 75, "relevance": 75, "productivity_impact": 75,
+        "integration_complexity": 60
+      }
+    },
+    {
+      "name": "pytest",
+      "provider": "cli",
+      "type": "test_runner",
+      "category": ["core_development"],
+      "score": 93.0,
+      "recommendation": "highly_recommended",
+      "dimensions": {
+        "compatibility": 95, "security": 95, "maintenance": 95,
+        "documentation": 90, "community": 95, "performance": 85,
+        "reliability": 95, "relevance": 95, "productivity_impact": 90,
+        "integration_complexity": 90
+      }
+    }
+  ],
+  "top_tools": [
+    {"name": "ruff", "type": "lsp_server", "score": 93.8, "recommendation": "highly_recommended"},
+    {"name": "pytest", "type": "test_runner", "score": 93.0, "recommendation": "highly_recommended"},
+    {"name": "black", "type": "formatter", "score": 85.2, "recommendation": "highly_recommended"},
+    {"name": "mypy", "type": "lsp_server", "score": 85.0, "recommendation": "highly_recommended"},
+    {"name": "context7", "type": "mcp_server", "score": 86.0, "recommendation": "highly_recommended"},
+    {"name": "postgres", "type": "mcp_server", "score": 82.0, "recommendation": "highly_recommended"},
+    {"name": "playwright", "type": "mcp_server", "score": 80.0, "recommendation": "recommended"},
+    {"name": "sequential-thinking", "type": "mcp_server", "score": 78.0, "recommendation": "recommended"},
+    {"name": "github", "type": "mcp_server", "score": 76.0, "recommendation": "recommended"}
+  ],
+  "ranking": [
+    {"rank": 1, "name": "ruff", "type": "lsp_server", "score": 93.8, "recommendation": "highly_recommended"},
+    {"rank": 2, "name": "pytest", "type": "test_runner", "score": 93.0, "recommendation": "highly_recommended"},
+    {"rank": 3, "name": "context7", "type": "mcp_server", "score": 86.0, "recommendation": "highly_recommended"},
+    {"rank": 4, "name": "black", "type": "formatter", "score": 85.2, "recommendation": "highly_recommended"},
+    {"rank": 5, "name": "mypy", "type": "lsp_server", "score": 85.0, "recommendation": "highly_recommended"},
+    {"rank": 6, "name": "postgres", "type": "mcp_server", "score": 82.0, "recommendation": "highly_recommended"},
+    {"rank": 7, "name": "playwright", "type": "mcp_server", "score": 80.0, "recommendation": "recommended"},
+    {"rank": 8, "name": "sequential-thinking", "type": "mcp_server", "score": 78.0, "recommendation": "recommended"},
+    {"rank": 9, "name": "github", "type": "mcp_server", "score": 76.0, "recommendation": "recommended"}
+  ]
+}

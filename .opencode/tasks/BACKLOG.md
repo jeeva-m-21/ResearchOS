@@ -59,22 +59,36 @@ Task format:
 - notes: hybrid search (vector + BM25 + RRF), suggestions via trigram, 10 seed nodes, 5 tests
 
 ## T-008 — Notebooks: DB migration + CRUD endpoints
-- status: TODO
+- status: DONE
 - deps: none
 - agents: @db, @backend, @test
 - acceptance: POST /v1/notebooks creates a notebook; GET returns it; 3+ tests pass
-- notes: migration for notebooks + blocks tables (see schema docs); basic create/list/get endpoints
+- notes: migration for notebooks + blocks tables (see schema docs); basic create/list/get endpoints. Commit c724da6.
 
 ## T-009 — Event system: DLQ retry + consumer monitoring
-- status: TODO
+- status: DONE
 - deps: T-004
 - agents: @backend, @test
 - acceptance: DLQ events can be retried via API endpoint; consumer health reports lag
-- notes: wire DLQ retry into /v1/events/retry-dlq; add consumer health/status endpoint
+- notes: POST /events/dlq/{group}/retry calls DeadLetterQueue.retry_all(); consumer health endpoint. Commit b83b17b.
 
 ## T-010 — SDK: Sync client for offline→online push
-- status: TODO
+- status: DONE
 - deps: T-006
 - agents: @sdk, @backend, @test
 - acceptance: SDK sync() pushes WAL events to /v1/events/batch and returns success
-- notes: build Sync class using httpx; integration test with running backend
+- notes: Syncer class reads WAL, converts to DomainEvent, POSTs batch, tracks offset. Commit caae373.
+
+## T-011 — Persistent Learning Module
+- status: DONE
+- deps: T-010
+- agents: @backend, @architect
+- acceptance: python scripts/learn.py --cycle runs and validates (0 failures)
+- notes: Evolution cycle (Observe-Analyze-Plan-Implement-Validate-Reflect-Learn-Persist). Memory schemas in .opencode/memory/. Orchestrator prompt updated. Commits caae373 + 818c832.
+
+## T-012 — MCP & Plugin Ecosystem Integration Module
+- status: DOING
+- deps: T-011
+- agents: @architect, @backend, @test
+- acceptance: python scripts/ecosystem.py --discover scans MCP servers + plugins and writes mcp_registry.json; python scripts/ecosystem.py --evaluate scores capabilities; ruff + mypy clean
+- notes: Discovery scanner for MCP servers, npm/pip plugins, git hooks, LSP servers. Evaluation engine scoring on compatibility, security, maintenance, relevance. Registry persists to .opencode/memory/{mcp_registry.json,capabilities.json}. Integrated into learn.py observe phase.

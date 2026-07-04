@@ -31,6 +31,8 @@ SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 
 # Import memory utilities
 sys.path.insert(0, str(SCRIPTS_DIR))
+from ecosystem import discover as _ecosystem_discover  # noqa: E402
+from ecosystem import validate as _ecosystem_validate  # noqa: E402
 from memory import (  # noqa: E402
     append_entry,
     git_log,
@@ -107,6 +109,22 @@ def observe() -> dict[str, Any]:
             log(f"Mypy: {len(error_lines)} errors")
     except Exception as e:
         log(f"Mypy observation failed: {e}")
+
+    # 5. Ecosystem discovery (non-fatal if fails)
+    try:
+        eco_discovery = _ecosystem_discover()
+        observations["ecosystem"] = {
+            "tool_count": eco_discovery.get("discovery_count", {}),
+            "capabilities_found": (
+                eco_discovery.get("discovery_count", {}).get("mcp_servers", 0)
+                + eco_discovery.get("discovery_count", {}).get("lsp_servers", 0)
+                + eco_discovery.get("discovery_count", {}).get("formatters", 0)
+            ),
+        }
+        cap_count = observations["ecosystem"]["capabilities_found"]
+        log(f"Ecosystem: {cap_count} capabilities")
+    except Exception as e:
+        log(f"Ecosystem discovery failed (non-fatal): {e}")
 
     log("Observation complete")
     return observations
@@ -290,6 +308,20 @@ def validate(observations: dict[str, Any]) -> dict[str, Any]:
         validation["checks"]["tests"] = {"passed": False, "error": str(e)}
         validation["passed"] = False
         log(f"Test validation error: {e}")
+
+    # Ecosystem validation (non-fatal)
+    try:
+        eco_result = _ecosystem_validate()
+        validation["checks"]["ecosystem"] = {
+            "passed": eco_result.get("status") == "healthy",
+            "status": eco_result.get("status"),
+            "issue_count": len(eco_result.get("issues", [])),
+        }
+        if eco_result.get("status") != "healthy":
+            validation["passed"] = False
+        log(f"Ecosystem: {eco_result.get('status')}")
+    except Exception as e:
+        log(f"Ecosystem validation failed (non-fatal): {e}")
 
     return validation
 

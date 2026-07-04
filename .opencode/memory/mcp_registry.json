@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "description": "MCP Server Registry — tracks discovered, configured, and available MCP servers for the ResearchOS development environment",
+  "last_discovered": "2026-07-04T17:50:33Z",
+  "discovery_count": {
+    "mcp_servers": 5,
+    "lsp_servers": 2,
+    "formatters": 2,
+    "linters": 2,
+    "test_runners": 1,
+    "git_hooks": 0,
+    "npm_packages": 0,
+    "pip_packages": 0
+  },
+  "discovery_result": {
+    "mcp_servers": [
+      {
+        "name": "context7",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "@upstash/context7-mcp"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T17:50:33Z",
+        "health": "configured",
+        "categories": ["documentation"]
+      },
+      {
+        "name": "postgres",
+        "type": "local",
+        "enabled": true,
+        "command": ["uvx", "postgres-mcp", "--access-mode=restricted"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T17:50:33Z",
+        "health": "configured",
+        "categories": ["database"]
+      },
+      {
+        "name": "sequential-thinking",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T17:50:33Z",
+        "health": "configured",
+        "categories": ["core_development"]
+      },
+      {
+        "name": "github",
+        "type": "remote",
+        "enabled": true,
+        "url": "https://api.githubcopilot.com/mcp/",
+        "discovered_at": "2026-07-04T17:50:33Z",
+        "health": "configured",
+        "categories": ["source_control"]
+      },
+      {
+        "name": "playwright",
+        "type": "local",
+        "enabled": true,
+        "command": ["npx", "-y", "@playwright/mcp@latest"],
+        "timeout": 30000,
+        "discovered_at": "2026-07-04T17:50:33Z",
+        "health": "configured",
+        "categories": ["browser_automation"]
+      }
+    ]
+  }
+}
