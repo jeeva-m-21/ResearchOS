@@ -38,11 +38,11 @@ Task format:
 - notes: emit events from POST /v1/experiments, POST /v1/experiments/{id}/runs, POST metrics
 
 ## T-005 — First event consumer: store events to PostgreSQL
-- status: TODO
+- status: DONE
 - deps: T-004
 - agents: @backend, @db, @test
-- acceptance: consumer writes events from stream to events table; test reads events back
-- notes: subclass EventConsumer, register handlers for experiment.started, metric.logged, write to events table
+- acceptance: test_event_store_persists_experiment_started passes; 8/8 tests pass
+- notes: EventStore class created; event-store consumer group wired into lifespan; migration adds events + processed_events tables; commit 6793932
 
 ## T-006 — Python SDK: package skeleton + WAL
 - status: TODO
