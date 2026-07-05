@@ -1,4 +1,5 @@
 import api from './client'
+import { useProjectStore } from '@/lib/store/project'
 
 export interface Experiment {
   id: string
@@ -31,7 +32,9 @@ export interface Metric {
   metadata?: Record<string, unknown>
 }
 
-const TEST_PROJECT_ID = '90c7cb47-cc1f-472f-99c5-2b17a9e088a8'
+function getProjectId(): string {
+  return useProjectStore.getState().currentProjectId ?? ''
+}
 
 export async function fetchExperiments(): Promise<Experiment[]> {
   const res = await api.get('/v1/experiments/')
@@ -44,7 +47,7 @@ export async function fetchExperiment(id: string): Promise<Experiment> {
 }
 
 export async function createExperiment(name: string, description?: string): Promise<{ id: string; name: string }> {
-  const params: Record<string, string> = { name, project_id: TEST_PROJECT_ID }
+  const params: Record<string, string> = { name, project_id: getProjectId() }
   if (description) params.description = description
   const res = await api.post('/v1/experiments/', null, { params })
   return res.data

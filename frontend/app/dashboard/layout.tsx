@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { useAuthStore } from '@/lib/store/auth'
+import { useProjectStore } from '@/lib/store/project'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -28,6 +30,9 @@ import {
   LogOut,
   Building2,
   Sparkles,
+  Plus,
+  Beaker,
+  NotebookIcon,
   Command,
 } from 'lucide-react'
 
@@ -38,51 +43,6 @@ const navItems = [
   { href: '/dashboard/papers', label: 'Papers', icon: FileText },
   { href: '/dashboard/search', label: 'Search', icon: Search },
 ]
-
-const pageTitles: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/dashboard/experiments': 'Experiments',
-  '/dashboard/notebooks': 'Notebooks',
-  '/dashboard/papers': 'Papers',
-  '/dashboard/search': 'Search',
-}
-
-function getPageTitle(pathname: string): string {
-  if (pageTitles[pathname]) return pageTitles[pathname]
-  const prefix = '/' + pathname.split('/').slice(1, 3).join('/')
-  if (pageTitles[prefix]) return pageTitles[prefix]
-  return 'Dashboard'
-}
-
-function SidebarSearch() {
-  const router = useRouter()
-  const [query, setQuery] = useState('')
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (query.trim()) {
-      router.push(`/dashboard/search?q=${encodeURIComponent(query.trim())}`)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="px-3 pb-2">
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search..."
-          className="w-full rounded-lg border border-border bg-muted/50 py-1.5 pl-8 pr-8 text-xs focus:outline-none focus:ring-1 focus:ring-ring focus:bg-background transition-all placeholder:text-muted-foreground/60"
-        />
-        <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-          <Command className="h-2.5 w-2.5" />K
-        </kbd>
-      </div>
-    </form>
-  )
-}
 
 function NavLinks({ className, onNavClick }: { className?: string; onNavClick?: () => void }) {
   const pathname = usePathname()
@@ -188,6 +148,146 @@ function OrgSwitcher() {
   )
 }
 
+// ─── Project Selector ───────────────────────────────────────────────────────
+
+function ProjectSelector() {
+  const { projects, currentProjectId, setCurrentProject } = useProjectStore()
+  const currentProject = projects.find((p) => p.id === currentProjectId)
+
+  if (!currentProject) return null
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-1.5 px-2 h-8 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Building2 className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden sm:inline max-w-[120px] truncate">{currentProject.name}</span>
+          <span className="sm:hidden">{currentProject.name}</span>
+          <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        {projects.map((project) => (
+          <DropdownMenuItem
+            key={project.id}
+            onClick={() => setCurrentProject(project.id)}
+            className={cn(
+              'flex items-center gap-2',
+              project.id === currentProjectId && 'bg-accent font-medium',
+            )}
+          >
+            <Building2 className="h-4 w-4" />
+            <div className="flex flex-col">
+              <span>{project.name}</span>
+              {project.description && (
+                <span className="text-xs text-muted-foreground truncate max-w-[180px]">
+                  {project.description}
+                </span>
+              )}
+            </div>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+// ─── Quick Create ────────────────────────────────────────────────────────────
+
+function QuickCreate() {
+  const router = useRouter()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          size="sm"
+          className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline text-xs">New</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={() => router.push('/dashboard/experiments')}>
+          <Beaker className="mr-2 h-4 w-4" />
+          New Experiment
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/dashboard/notebooks')}>
+          <NotebookIcon className="mr-2 h-4 w-4" />
+          New Notebook
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+// ─── Top Search ──────────────────────────────────────────────────────────────
+
+function TopSearch() {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [focused, setFocused] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (query.trim()) {
+      router.push(`/dashboard/search?q=${encodeURIComponent(query.trim())}`)
+    }
+  }
+
+  // Cmd+K / Ctrl+K hotkey
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        document.getElementById('topbar-search-input')?.focus()
+      }
+    },
+    [],
+  )
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
+
+  return (
+    <form onSubmit={handleSubmit} className="relative w-full max-w-[200px] lg:max-w-[280px]">
+      <div
+        className={cn(
+          'relative flex items-center rounded-lg border transition-all',
+          focused
+            ? 'border-ring ring-1 ring-ring'
+            : 'border-border bg-muted/50 hover:bg-accent/50',
+        )}
+      >
+        <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+        <input
+          id="topbar-search-input"
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="Search..."
+          className="w-full bg-transparent py-1.5 pl-8 pr-8 text-xs outline-none placeholder:text-muted-foreground/60"
+        />
+        <kbd className="absolute right-2 hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <Command className="h-2.5 w-2.5" />
+          K
+        </kbd>
+      </div>
+    </form>
+  )
+}
+
+// ─── User Menu (top-right) ───────────────────────────────────────────────────
+
 function UserMenu() {
   const { user, logout } = useAuthStore()
   const router = useRouter()
@@ -202,8 +302,8 @@ function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-          <Avatar className="h-9 w-9">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs">
               {initials}
             </AvatarFallback>
@@ -232,6 +332,8 @@ function UserMenu() {
   )
 }
 
+// ─── Sidebar Content ─────────────────────────────────────────────────────────
+
 function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   return (
     <div className="flex h-full flex-col">
@@ -248,13 +350,8 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="pt-3">
-        <SidebarSearch />
-      </div>
-
       {/* Nav links */}
-      <div className="flex-1 p-3 pt-2">
+      <div className="flex-1 p-3 pt-4">
         <NavLinks onNavClick={onNavClick} />
       </div>
 
@@ -266,10 +363,19 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   )
 }
 
+// ─── Dashboard Shell ─────────────────────────────────────────────────────────
+
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const [sheetOpen, setSheetOpen] = useState(false)
-  const pathname = usePathname()
-  const pageTitle = getPageTitle(pathname)
+  const { loadProjects, projects } = useProjectStore()
+  const { isAuthenticated } = useAuthStore()
+
+  // Load projects when authenticated
+  useEffect(() => {
+    if (isAuthenticated && projects.length === 0) {
+      loadProjects()
+    }
+  }, [isAuthenticated, projects.length, loadProjects])
 
   return (
     <div className="flex min-h-screen bg-muted/30">
@@ -293,15 +399,22 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Main content area */}
       <div className="md:pl-64 flex flex-col flex-1">
-        {/* Topbar */}
-        <header className="sticky top-0 z-20 bg-background border-b">
-          <div className="flex items-center justify-between px-4 md:px-6 h-14">
-            <div className="flex items-center gap-3">
+        {/* Topbar — Colab/Kaggle inspired */}
+        <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b">
+          <div className="flex items-center justify-between px-4 md:px-6 h-14 gap-2">
+            {/* Left: project selector */}
+            <div className="flex items-center gap-2 min-w-0">
               {/* Mobile spacer for hamburger */}
               <div className="md:hidden w-9" />
-              <h1 className="text-lg font-semibold">{pageTitle}</h1>
+              <ProjectSelector />
+              <span className="hidden sm:inline text-xs text-muted-foreground/50 mx-0.5">/</span>
             </div>
+
+            {/* Right: quick-create, search, theme, user */}
             <div className="flex items-center gap-2">
+              <QuickCreate />
+              <TopSearch />
+              <ThemeToggle className="h-8 w-8 border-0 shadow-none hover:bg-accent" />
               <UserMenu />
             </div>
           </div>

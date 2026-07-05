@@ -1,45 +1,40 @@
 # STATE.md
 
-## Current Sprint: Frontend Search UI
+## Current Sprint: Project-Level Context + Kaggle-Inspired Topbar
 
-**Goal**: Build complete Search UI with search bar, autocomplete suggestions, type filters, and results list.
+**Goal**: Make "project" the main organizational level and add a Colab/Kaggle-inspired topbar with project selector, quick-create, and search.
 
 ### Plan
-1. Create `lib/api/search.ts` — API client + TypeScript interfaces — DONE
-2. Build search UI — search bar, autocomplete, type filters, results, pagination — DONE
-3. Run lint + typecheck + verify — DONE
+1. Add `GET /v1/projects/` backend endpoint — DONE
+2. Create `lib/api/projects.ts` + `lib/store/project.ts` — DONE
+3. Redesign topbar with project selector + quick-create + theme toggle + search — DONE
+4. Wire project context into experiments/notebooks API (remove hardcoded project_id) — DONE
+5. Run tsc + build + verify — DONE
 
 ### In Progress
 - (none)
 
 ### Done
-- Created `lib/api/search.ts`:
-  - `SearchResult`, `SearchResponse`, `SearchParams` interfaces
-  - `searchResults()` — hybrid search (vector + BM25 + RRF)
-  - `fetchSuggestions()` — trigram autocomplete
-  - `NODE_TYPES` constant array for filter chips
-- Rewrote `app/dashboard/search/page.tsx`:
-  - Search input with 300ms debounce and autocomplete suggestions dropdown
-  - Type filter chips (9 types: Ideas, Hypotheses, Experiments, Papers, Datasets, Models, Notebooks, People, Insights)
-  - Colored type badges with icons per node type
-  - Results list with relevance score, description, linked to entity pages
-  - Pagination (Previous/Next with page indicator)
-  - Result count + timing display (e.g., "Found 10 results in 79ms")
-  - Loading, error, empty state (no query), empty state (no results)
-  - Outside-click-to-close for suggestions dropdown
-  - Clear button for search input
 
-### Verification
-- TypeScript check (`tsc --noEmit`): **passed** (zero errors)
-- Build (`npm run build`): **passed** — `/dashboard/search` (7.13 kB, static)
-- API search: **verified** — returns 10 results for "transformer" in 79ms
-- API suggestions: **verified** — returns autocomplete suggestions
-- Backend tests: **5/5 passed**
+#### Backend
+- `backend/src/api/routes/projects.py`: `GET /v1/projects/` lists projects for current org; `GET /v1/projects/{id}` gets a single project
+- Registered `/v1/projects` router in `main.py`
+
+#### Frontend
+- `lib/api/projects.ts`: `Project` type + `fetchProjects()` / `fetchProject()` API calls
+- `lib/store/project.ts`: Zustand store with `zustand/middleware/persist` — loads projects on auth, defaults to first project, persists `currentProjectId` in localStorage
+- `lib/api/experiments.ts`: Removed `TEST_PROJECT_ID` constant, uses `useProjectStore.getState().currentProjectId` via `getProjectId()` helper
+- `lib/api/notebooks.ts`: Same pattern — dynamic project_id from store
+
+#### Topbar Redesign (`app/dashboard/layout.tsx`)
+- **ProjectSelector**: Dropdown in the top-left showing all user projects; switch context with one click
+- **QuickCreate**: "+ New" button with dropdown for "New Experiment" / "New Notebook"
+- **TopSearch**: Search bar moved from sidebar to topbar with Cmd+K hotkey; elegant focus ring + hover states
+- **ThemeToggle**: Integrated from existing `components/theme-toggle.tsx` — resized to 32x32 to match topbar
+- **UserMenu**: Compact 32x32 avatar dropdown
+- **Layout**: Sticky topbar with `backdrop-blur-sm` for glassmorphism effect; responsive (mobile hamburger preserved)
 
 ### Next Steps
-- All Phase 2 frontend tasks complete! 🎉
-- Run integration tests
-- Review for any remaining polish/edge cases
-
-### Blocked
-- (none)
+- Add project creation UI (dialog)
+- Add project detail page (dashboard scoped to project)
+- Add "all projects" view in dashboard
