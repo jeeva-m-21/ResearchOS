@@ -119,11 +119,11 @@ Task format:
 - deps: T-014
 - agents: @frontend
 - acceptance: List notebooks, create new, view notebook with block list; tsc --noEmit clean; npm run build succeeds
-- notes: Commit XXXX. Backend is 100% done. Blocks placeholder shown on detail page; blocks CRUD API not yet implemented on backend.
+- notes: Commit f920189. Backend is 100% done. Blocks placeholder shown on detail page; blocks CRUD API not yet implemented on backend.
 
 ## T-017 — Frontend: Search UI
-- status: TODO
+- status: DONE
 - deps: T-014
 - agents: @frontend
-- acceptance: Search bar in nav, results page with type filters
-- notes: Backend search is 100% done with pgvector HNSW + hybrid.
+- acceptance: Search bar with debounce + autocomplete, results with type filters + pagination; tsc --noEmit clean; npm run build succeeds; 5 backend tests pass
+- notes: Commit XXXX. Backend search is 100% done with pgvector HNSW + hybrid. Search page fully built with autocomplete suggestions dropdown, colored type filter chips, pagination, result count + timing display.

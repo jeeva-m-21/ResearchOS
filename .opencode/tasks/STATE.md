@@ -2,8 +2,8 @@
 Last updated: 2026-07-06
 
 ## Current task
-T-016 — Frontend: Notebooks CRUD UI — DONE
-Next: T-017 — Frontend: Search UI
+T-017 — Frontend: Search UI — DONE
+Next: All Phase 2 frontend tasks complete — run full integration tests
 
 ## Accomplishments
 1. ✅ Fixed "No QueryClient set" runtime error — added lib/providers.tsx with QueryClientProvider
