@@ -115,11 +115,11 @@ Task format:
 - notes: Recharts already installed. Backend is 100% done.
 
 ## T-016 — Frontend: Notebooks CRUD UI
-- status: TODO
+- status: DONE
 - deps: T-014
 - agents: @frontend
-- acceptance: List notebooks, create new, view notebook with block list
-- notes: CodeMirror already installed. Backend is 100% done.
+- acceptance: List notebooks, create new, view notebook with block list; tsc --noEmit clean; npm run build succeeds
+- notes: Commit XXXX. Backend is 100% done. Blocks placeholder shown on detail page; blocks CRUD API not yet implemented on backend.
 
 ## T-017 — Frontend: Search UI
 - status: TODO

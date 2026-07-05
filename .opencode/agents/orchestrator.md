@@ -1,7 +1,7 @@
 ---
 description: Autonomous engineering manager. Plans, delegates, tests, reviews, commits, repeats.
 mode: primary
-model: amazon-bedrock/us.deepseek.v3.2
+model: amazon-bedrock/deepseek.v3.2
 temperature: 0.1
 steps: 60
 

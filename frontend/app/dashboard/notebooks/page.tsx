@@ -1,21 +1,192 @@
 'use client'
 
-import { BookOpen } from 'lucide-react'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import Link from 'next/link'
+import { BookOpen, Plus, Loader2, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  fetchNotebooks,
+  createNotebook,
+  type Notebook,
+} from '@/lib/api/notebooks'
+
+function CreateNotebookDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: () => createNotebook(title, description || undefined),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] })
+      setTitle('')
+      setDescription('')
+      onOpenChange(false)
+    },
+  })
+
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md p-6 mx-4">
+        <h2 className="text-lg font-semibold mb-4">Create Notebook</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Title *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              placeholder="My Notebook"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              rows={3}
+              placeholder="Optional description"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => mutation.mutate()}
+              disabled={!title.trim() || mutation.isPending}
+            >
+              {mutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create'
+              )}
+            </Button>
+          </div>
+        </div>
+        {mutation.isError && (
+          <p className="mt-3 text-sm text-destructive">
+            Error: {(mutation.error as Error)?.message || 'Failed to create notebook'}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function NotebookCard({ notebook }: { notebook: Notebook }) {
+  return (
+    <Link href={`/dashboard/notebooks/${notebook.id}`} className="h-full">
+      <div className="flex flex-col h-full rounded-xl bg-card p-5 shadow-sm border border-border hover:shadow-md hover:border-foreground/20 transition-all cursor-pointer">
+        <div className="flex items-start justify-between flex-1">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-foreground truncate">{notebook.title}</h3>
+            {notebook.description && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                {notebook.description}
+              </p>
+            )}
+          </div>
+          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ml-3 bg-secondary text-secondary-foreground shrink-0">
+            {notebook.branch}
+          </span>
+        </div>
+        <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground shrink-0">
+          <span>Created {new Date(notebook.created_at).toLocaleDateString()}</span>
+          <span>Updated {new Date(notebook.updated_at).toLocaleDateString()}</span>
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 export default function NotebooksPage() {
+  const [showCreate, setShowCreate] = useState(false)
+  const queryClient = useQueryClient()
+
+  const { data: notebooks, isLoading, isError, error } = useQuery({
+    queryKey: ['notebooks'],
+    queryFn: fetchNotebooks,
+  })
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <BookOpen className="h-6 w-6 text-foreground" />
-        <h1 className="text-2xl font-bold text-foreground">Notebooks</h1>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-6 w-6 text-foreground" />
+          <h1 className="text-2xl font-bold text-foreground">Notebooks</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['notebooks'] })}
+          >
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Refresh
+          </Button>
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            New Notebook
+          </Button>
+        </div>
       </div>
-      <p className="text-muted-foreground">
-        Create and manage block-based research notebooks with executable code blocks.
-      </p>
-      <div className="rounded-xl bg-card p-8 shadow-sm border border-border text-center">
-        <BookOpen className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
-        <p className="text-muted-foreground">No notebooks yet. Create your first notebook to get started.</p>
-      </div>
+
+      {/* Error state */}
+      {isError && (
+        <div className="rounded-xl bg-destructive/10 p-4 border border-destructive/20">
+          <p className="text-sm text-destructive">
+            Error loading notebooks: {(error as Error)?.message || 'Unknown error'}
+          </p>
+        </div>
+      )}
+
+      {/* Loading state */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!isLoading && !isError && notebooks?.length === 0 && (
+        <div className="rounded-xl bg-card p-12 shadow-sm border border-border text-center">
+          <BookOpen className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-foreground">No notebooks yet</h3>
+          <p className="text-muted-foreground mt-1">Create your first notebook to capture research ideas and experiments.</p>
+          <Button className="mt-4" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Create Notebook
+          </Button>
+        </div>
+      )}
+
+      {/* Notebooks list */}
+      {notebooks && notebooks.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {notebooks.map((nb) => (
+            <NotebookCard key={nb.id} notebook={nb} />
+          ))}
+        </div>
+      )}
+
+      {/* Create dialog */}
+      <CreateNotebookDialog open={showCreate} onOpenChange={setShowCreate} />
     </div>
   )
 }

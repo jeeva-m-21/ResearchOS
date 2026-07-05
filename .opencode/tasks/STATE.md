@@ -1,9 +1,9 @@
 # ResearchOS Autonomy State
-Last updated: 2026-07-05
+Last updated: 2026-07-06
 
 ## Current task
-T-015 — Frontend: Experiments CRUD UI — DONE
-Next: T-016 — Notebooks CRUD UI
+T-016 — Frontend: Notebooks CRUD UI — DONE
+Next: T-017 — Frontend: Search UI
 
 ## Accomplishments
 1. ✅ Fixed "No QueryClient set" runtime error — added lib/providers.tsx with QueryClientProvider
