@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { useAuthStore } from '@/lib/store/auth'
 import { cn } from '@/lib/utils'
-
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -18,7 +17,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
-
 import {
   LayoutDashboard,
   FlaskConical,
@@ -29,6 +27,8 @@ import {
   ChevronDown,
   LogOut,
   Building2,
+  Sparkles,
+  Command,
 } from 'lucide-react'
 
 const navItems = [
@@ -48,12 +48,40 @@ const pageTitles: Record<string, string> = {
 }
 
 function getPageTitle(pathname: string): string {
-  // Exact match first
   if (pageTitles[pathname]) return pageTitles[pathname]
-  // Prefix match (e.g. /dashboard/experiments/123)
   const prefix = '/' + pathname.split('/').slice(1, 3).join('/')
   if (pageTitles[prefix]) return pageTitles[prefix]
   return 'Dashboard'
+}
+
+function SidebarSearch() {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (query.trim()) {
+      router.push(`/dashboard/search?q=${encodeURIComponent(query.trim())}`)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="px-3 pb-2">
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search..."
+          className="w-full rounded-lg border border-border bg-muted/50 py-1.5 pl-8 pr-8 text-xs focus:outline-none focus:ring-1 focus:ring-ring focus:bg-background transition-all placeholder:text-muted-foreground/60"
+        />
+        <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <Command className="h-2.5 w-2.5" />K
+        </kbd>
+      </div>
+    </form>
+  )
 }
 
 function NavLinks({ className, onNavClick }: { className?: string; onNavClick?: () => void }) {
@@ -72,13 +100,16 @@ function NavLinks({ className, onNavClick }: { className?: string; onNavClick?: 
             href={item.href}
             onClick={onNavClick}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all relative',
               isActive
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             )}
           >
-            <Icon className="h-4 w-4" />
+            {isActive && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-primary" />
+            )}
+            <Icon className={cn('h-4 w-4', isActive ? 'text-primary' : '')} />
             {item.label}
           </Link>
         )
@@ -206,7 +237,10 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
     <div className="flex h-full flex-col">
       {/* Logo + Org */}
       <div className="p-4 border-b">
-        <Link href="/dashboard" className="text-lg font-bold" onClick={onNavClick}>
+        <Link href="/dashboard" className="flex items-center gap-2 text-lg font-bold" onClick={onNavClick}>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
+          </div>
           ResearchOS
         </Link>
         <div className="mt-2">
@@ -214,8 +248,13 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
         </div>
       </div>
 
+      {/* Search */}
+      <div className="pt-3">
+        <SidebarSearch />
+      </div>
+
       {/* Nav links */}
-      <div className="flex-1 p-3">
+      <div className="flex-1 p-3 pt-2">
         <NavLinks onNavClick={onNavClick} />
       </div>
 
