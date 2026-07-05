@@ -18,6 +18,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useProjectStore } from '@/lib/store/project'
 import {
   fetchExperiments,
   createExperiment,
@@ -270,9 +271,11 @@ export default function ExperimentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const queryClient = useQueryClient()
 
+  const currentProjectId = useProjectStore((s) => s.currentProjectId)
+
   const { data: experiments, isLoading, isError, error } = useQuery({
-    queryKey: ['experiments'],
-    queryFn: fetchExperiments,
+    queryKey: ['experiments', currentProjectId ?? ''],
+    queryFn: () => fetchExperiments(currentProjectId ?? undefined),
   })
 
   const filteredExperiments = useMemo(() => {

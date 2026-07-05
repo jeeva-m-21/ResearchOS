@@ -2,7 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/lib/store/auth'
-import api from '@/lib/api/client'
+import { useProjectStore } from '@/lib/store/project'
+import { fetchExperiments, fetchExperimentsCount } from '@/lib/api/experiments'
+import { fetchNotebooks, fetchNotebooksCount } from '@/lib/api/notebooks'
 import Link from 'next/link'
 import {
   FlaskConical,
@@ -38,22 +40,6 @@ function timeAgo(dateStr: string): string {
   const days = Math.floor(hrs / 24)
   if (days < 7) return `${days}d ago`
   return new Date(dateStr).toLocaleDateString()
-}
-
-// ---------- data fetching ----------
-
-async function fetchExperimentsCount(): Promise<number> {
-  try {
-    const res = await api.get('/v1/experiments/')
-    return Array.isArray(res.data) ? res.data.length : 0
-  } catch { return 0 }
-}
-
-async function fetchNotebooksCount(): Promise<number> {
-  try {
-    const res = await api.get('/v1/notebooks/')
-    return Array.isArray(res.data) ? res.data.length : 0
-  } catch { return 0 }
 }
 
 // ---------- mini components ----------
@@ -234,6 +220,7 @@ function ResearchTips() {
 
 function ResearchHubHeader() {
   const { user } = useAuthStore()
+  const currentProject = useProjectStore((s) => s.getCurrentProject())
   const hour = new Date().getHours()
   let greeting = 'Good evening'
   if (hour < 12) greeting = 'Good morning'
@@ -250,7 +237,14 @@ function ResearchHubHeader() {
             {greeting}{user?.name ? `, ${user.name.split(' ')[0]}` : ''}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Your research command center
+            {currentProject ? (
+              <>
+                <span className="font-medium text-foreground/80">{currentProject.name}</span>
+                {' — your research command center'}
+              </>
+            ) : (
+              'Your research command center'
+            )}
           </p>
         </div>
       </div>
@@ -262,19 +256,27 @@ function ResearchHubHeader() {
 
 export default function DashboardHome() {
   const { user, organizations } = useAuthStore()
+  const currentProjectId = useProjectStore((s) => s.currentProjectId)
 
   const { data: experimentsCount, isLoading: loadingExperiments } = useQuery({
-    queryKey: ['experiments-count'],
-    queryFn: fetchExperimentsCount,
+    queryKey: ['experiments-count', currentProjectId ?? ''],
+    queryFn: () => fetchExperimentsCount(currentProjectId ?? undefined),
     retry: 1,
     staleTime: 30000,
   })
 
   const { data: notebooksCount, isLoading: loadingNotebooks } = useQuery({
-    queryKey: ['notebooks-count'],
-    queryFn: fetchNotebooksCount,
+    queryKey: ['notebooks-count', currentProjectId ?? ''],
+    queryFn: () => fetchNotebooksCount(currentProjectId ?? undefined),
     retry: 1,
     staleTime: 30000,
+  })
+
+  const { data: recentExperiments } = useQuery({
+    queryKey: ['recent-experiments', currentProjectId ?? ''],
+    queryFn: () => fetchExperiments(currentProjectId ?? undefined),
+    retry: 1,
+    staleTime: 15000,
   })
 
   return (

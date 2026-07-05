@@ -1,6 +1,6 @@
-"""Project endpoints — list and get projects for the current organization."""
-from typing import Any
-from uuid import UUID
+"""Project endpoints — CRUD for the current organization."""
+from typing import Any, Optional
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -12,6 +12,36 @@ from src.infrastructure.auth.jwt import TokenData
 from src.infrastructure.database import db
 
 router = APIRouter()
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_project(
+    name: str,
+    description: Optional[str] = None,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+) -> dict[str, Any]:
+    """Create a new project in the current organization."""
+    project_id = uuid4()
+
+    await db.execute(
+        """
+        INSERT INTO projects
+            (id, organization_id, name, description, created_by)
+        VALUES ($1, $2, $3, $4, $5)
+        """,
+        project_id,
+        organization_id,
+        name,
+        description or "",
+        user.user_id,
+    )
+
+    return {
+        "id": str(project_id),
+        "name": name,
+        "description": description or "",
+    }
 
 
 @router.get("/")

@@ -15,7 +15,16 @@ from src.infrastructure.database import db
 from src.infrastructure.events import EventConsumer, EventStore
 
 from .middleware.auth import AuthMiddleware, OrganizationMiddleware
-from .routes import auth, events, experiments, health, metrics, notebooks, projects, search
+from .routes import (
+    auth,
+    events,
+    experiments,
+    health,
+    metrics,
+    notebooks,
+    projects,
+    search,
+)
 
 logger = logging.getLogger(__name__)
 

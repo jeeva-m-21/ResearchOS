@@ -110,7 +110,7 @@ fi
 # ── 7. Start frontend dev server ────────────
 info "Starting frontend dev server..."
 cd frontend
-npx next dev -p 3000 &
+npx next dev -p 3002 &
 FRONTEND_PID=$!
 cd ..
 

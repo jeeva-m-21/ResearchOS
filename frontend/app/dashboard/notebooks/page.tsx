@@ -23,6 +23,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useProjectStore } from '@/lib/store/project'
 import {
   fetchNotebooks,
   createNotebook,
@@ -202,9 +203,11 @@ export default function NotebooksPage() {
   const [showCreate, setShowCreate] = useState(false)
   const queryClient = useQueryClient()
 
+  const currentProjectId = useProjectStore((s) => s.currentProjectId)
+
   const { data: notebooks, isLoading, isError, error } = useQuery({
-    queryKey: ['notebooks'],
-    queryFn: fetchNotebooks,
+    queryKey: ['notebooks', currentProjectId ?? ''],
+    queryFn: () => fetchNotebooks(currentProjectId ?? undefined),
   })
 
   return (

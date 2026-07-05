@@ -15,8 +15,10 @@ function getProjectId(): string {
   return useProjectStore.getState().currentProjectId ?? ''
 }
 
-export async function fetchNotebooks(): Promise<Notebook[]> {
-  const res = await api.get('/v1/notebooks/')
+export async function fetchNotebooks(projectId?: string): Promise<Notebook[]> {
+  const params: Record<string, string | number> = {}
+  if (projectId) params.project_id = projectId
+  const res = await api.get('/v1/notebooks/', { params })
   return res.data
 }
 
@@ -32,9 +34,9 @@ export async function createNotebook(title: string, description?: string): Promi
   return res.data
 }
 
-export async function fetchNotebooksCount(): Promise<number> {
+export async function fetchNotebooksCount(projectId?: string): Promise<number> {
   try {
-    const data = await fetchNotebooks()
+    const data = await fetchNotebooks(projectId)
     return data.length
   } catch {
     return 0

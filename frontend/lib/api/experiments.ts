@@ -36,8 +36,10 @@ function getProjectId(): string {
   return useProjectStore.getState().currentProjectId ?? ''
 }
 
-export async function fetchExperiments(): Promise<Experiment[]> {
-  const res = await api.get('/v1/experiments/')
+export async function fetchExperiments(projectId?: string): Promise<Experiment[]> {
+  const params: Record<string, string | number> = {}
+  if (projectId) params.project_id = projectId
+  const res = await api.get('/v1/experiments/', { params })
   return res.data
 }
 
@@ -95,9 +97,9 @@ export async function completeRun(
   return res.data
 }
 
-export async function fetchExperimentsCount(): Promise<number> {
+export async function fetchExperimentsCount(projectId?: string): Promise<number> {
   try {
-    const data = await fetchExperiments()
+    const data = await fetchExperiments(projectId)
     return data.length
   } catch {
     return 0

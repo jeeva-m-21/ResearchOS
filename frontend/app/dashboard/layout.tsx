@@ -7,6 +7,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { useAuthStore } from '@/lib/store/auth'
 import { useProjectStore } from '@/lib/store/project'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { CreateProjectDialog } from '@/components/projects/CreateProjectDialog'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -200,29 +201,41 @@ function ProjectSelector() {
 
 function QuickCreate() {
   const router = useRouter()
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline text-xs">New</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => router.push('/dashboard/experiments')}>
-          <Beaker className="mr-2 h-4 w-4" />
-          New Experiment
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/dashboard/notebooks')}>
-          <NotebookIcon className="mr-2 h-4 w-4" />
-          New Notebook
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline text-xs">New</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => router.push('/dashboard/experiments')}>
+            <Beaker className="mr-2 h-4 w-4" />
+            New Experiment
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/dashboard/notebooks')}>
+            <NotebookIcon className="mr-2 h-4 w-4" />
+            New Notebook
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setDialogOpen(true) }}>
+            <Building2 className="mr-2 h-4 w-4" />
+            New Project
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <CreateProjectDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
+    </>
   )
 }
 
