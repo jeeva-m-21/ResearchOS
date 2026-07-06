@@ -178,8 +178,15 @@ Task format:
 - notes: History endpoint (ordered by version DESC, includes created_at/created_by) and diff endpoint (unified_diff from difflib, returns diff_lines list, 404 for invalid versions). Commit b6d2a17.
 
 ## T-025 — Compute Factory Backend
-- status: TODO
+- status: DONE
 - deps: T-024
 - agents: @backend, @test, @db
 - acceptance: ComputeProvider abstract class defined; InAppProvider wraps subprocess executor; ComputeFactory resolves provider by name; POST /v1/notebooks/{id}/execute?provider=in_app uses factory; tests pass; ruff + mypy clean
-- notes: First step toward Colab-like notebook execution. Pluggable compute backends. Provider interface in application layer. In-app provider refactors existing executor service.
+- notes: First step toward Colab-like notebook execution. Pluggable compute backends. Provider interface in application layer. In-app provider refactors existing executor service. Commit 2c54c8f.
+
+## T-026 — Research AI Chat Assistant
+- status: TODO
+- deps: T-025
+- agents: @backend, @test, @frontend
+- acceptance: POST /v1/ask streams SSE responses; GET /v1/ask/models lists available LLM providers; frontend /dashboard/ask page renders chat with model selector; 48+ tests pass; ruff + mypy clean; tsc --noEmit clean; npm run build succeeds
+- notes: Research-aware chat with model selection (OpenAI, Anthropic, Ollama). Read-only tools for search, experiments, notebooks. SSE streaming for real-time responses.

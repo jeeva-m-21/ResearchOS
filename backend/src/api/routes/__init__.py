@@ -1,6 +1,7 @@
 """API Routes"""
 from . import (
     artifacts,
+    ask,
     auth,
     experiments,
     health,
@@ -11,6 +12,7 @@ from . import (
 
 __all__ = [
     "artifacts",
+    "ask",
     "auth",
     "experiments",
     "health",

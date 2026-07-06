@@ -17,6 +17,7 @@ from src.infrastructure.events import EventConsumer, EventStore
 from .middleware.auth import AuthMiddleware, OrganizationMiddleware
 from .routes import (
     artifacts,
+    ask,
     auth,
     events,
     experiments,
@@ -130,6 +131,7 @@ app.include_router(search.router, prefix="/v1/search", tags=["Search"])
 app.include_router(metrics.router, prefix="/v1", tags=["Metrics"])
 app.include_router(projects.router, prefix="/v1/projects", tags=["Projects"])
 app.include_router(events.router, prefix="/v1", tags=["Events"])
+app.include_router(ask.router, tags=["AI Chat"])
 
 # Prometheus metrics
 metrics_app = make_asgi_app()
