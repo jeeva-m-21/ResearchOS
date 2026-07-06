@@ -150,8 +150,22 @@ Task format:
 - notes: Execution domain entity, migration for executions table, Python subprocess executor, execute + list endpoints, 2 tests. Commit eec8a48.
 
 ## T-021 — Notebook Block Execution (Frontend)
-- status: TODO
+- status: DONE
 - deps: T-020, T-016
 - agents: @frontend, @test
 - acceptance: Python code blocks show a "Run" button; clicking it calls POST .../execute; output area displays execution result; tsc --noEmit clean; npm run build succeeds
-- notes: Add "Run" button to python/rust/sql code blocks in the notebook detail view. Show output in a terminal-like panel below the block. Handle loading/error states.
+- notes: Add "Run" button to python/rust/sql code blocks in the notebook detail view. Show output in a terminal-like panel below the block. Handle loading/error states. Commit d0b5d44.
+
+## T-022 — Artifact Storage Backend
+- status: TODO
+- deps: none
+- agents: @backend, @db, @test
+- acceptance: POST /v1/artifacts/upload creates artifact entry and returns metadata; GET /v1/artifacts/ lists artifacts; 2+ tests pass; ruff + mypy clean
+- notes: Domain entities already defined. Need migration for artifacts + artifact_versions + artifact_lineage tables, infrastructure for S3/MinIO upload, and API endpoints. Upload to local filesystem for MVP.
+
+## T-023 — Notebook Block Editing (Update/Delete)
+- status: TODO
+- deps: T-019
+- agents: @backend, @test
+- acceptance: PUT /v1/notebooks/{id}/blocks/{bid} updates block content and returns new version; DELETE ... removes block; tests pass; ruff + mypy clean
+- notes: Missing PUT/PATCH/DELETE endpoints for notebook blocks. Blocks are versioned so update creates new block_content entry.

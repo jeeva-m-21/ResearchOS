@@ -1,4 +1,20 @@
 """API Routes"""
-from . import auth, experiments, health, metrics, notebooks, search
+from . import (
+    artifacts,
+    auth,
+    experiments,
+    health,
+    metrics,
+    notebooks,
+    search,
+)
 
-__all__ = ["auth", "experiments", "notebooks", "search", "health", "metrics"]
+__all__ = [
+    "artifacts",
+    "auth",
+    "experiments",
+    "health",
+    "metrics",
+    "notebooks",
+    "search",
+]

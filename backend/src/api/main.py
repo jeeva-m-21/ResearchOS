@@ -16,6 +16,7 @@ from src.infrastructure.events import EventConsumer, EventStore
 
 from .middleware.auth import AuthMiddleware, OrganizationMiddleware
 from .routes import (
+    artifacts,
     auth,
     events,
     experiments,
@@ -122,6 +123,7 @@ app.add_middleware(
 # Routes
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(health.router, prefix="/health", tags=["Health"])
+app.include_router(artifacts.router, prefix="/v1/artifacts", tags=["Artifacts"])
 app.include_router(experiments.router, prefix="/v1/experiments", tags=["Experiments"])
 app.include_router(notebooks.router, prefix="/v1/notebooks", tags=["Notebooks"])
 app.include_router(search.router, prefix="/v1/search", tags=["Search"])
