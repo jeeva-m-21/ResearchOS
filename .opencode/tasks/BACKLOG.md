@@ -169,3 +169,10 @@ Task format:
 - agents: @backend, @test
 - acceptance: PUT /v1/notebooks/{id}/blocks/{bid} updates block content and returns new version; DELETE ... removes block; 10 notebook tests pass; 34 total tests pass; ruff + mypy clean
 - notes: Added UpdateBlockRequest model, PUT endpoint (creates new block_content version with incremented version), DELETE endpoint (soft delete). 2 new acceptance tests.
+
+## T-024 — Notebook Block Content History/Diff
+- status: TODO
+- deps: T-023
+- agents: @backend, @test
+- acceptance: GET /v1/notebooks/{id}/blocks/{bid}/history returns list of versions with timestamps; GET .../diff?v1=1&v2=2 returns unified diff; 2+ tests pass; ruff + mypy clean
+- notes: Add history endpoint to list all block_content versions and diff endpoint to compare two versions using difflib. Completes the block versioning feature.

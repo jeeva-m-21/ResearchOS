@@ -575,3 +575,153 @@ async def test_delete_block() -> None:
             f"Expected 404 for deleted block, got {get_resp.status_code}: "
             f"{get_resp.text}"
         )
+
+
+# ── Block History / Diff tests ─────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_block_history() -> None:
+    """Create a block, update it, then verify history lists both versions."""
+    async with httpx.AsyncClient() as client:
+        # ── 1. Login ──────────────────────────────────────────────────
+        login_resp = await client.post(
+            f"{BASE_URL}/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+                "organization_id": TEST_ORG_ID,
+            },
+        )
+        assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+        token = login_resp.json()["access_token"]
+
+        # ── 2. Create notebook ────────────────────────────────────────
+        nb_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/",
+            params={"title": "History Test NB", "project_id": TEST_PROJECT_ID},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert nb_resp.status_code == 200
+        notebook_id = nb_resp.json()["id"]
+
+        # ── 3. Create block ───────────────────────────────────────────
+        create_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks",
+            json={"block_type": "markdown", "content": "Version 1"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert create_resp.status_code == 200
+        block_id = create_resp.json()["id"]
+
+        # ── 4. Update block to create version 2 ───────────────────────
+        update_resp = await client.put(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}",
+            json={"content": "Version 2"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert update_resp.status_code == 200
+        assert update_resp.json()["current_version"] == 2
+
+        # ── 5. Get history ────────────────────────────────────────────
+        hist_resp = await client.get(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}/history",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert hist_resp.status_code == 200, (
+            f"History failed: {hist_resp.status_code} - {hist_resp.text}"
+        )
+
+        entries = hist_resp.json()
+        assert isinstance(entries, list)
+        assert len(entries) >= 2, f"Expected >=2 history entries, got {len(entries)}"
+
+        # Newest first (version 2, then version 1)
+        assert entries[0]["version"] == 2, (
+            f"Expected v2 first, got v{entries[0]['version']}"
+        )
+        assert entries[0]["content"] == "Version 2"
+        assert entries[1]["version"] == 1
+        assert entries[1]["content"] == "Version 1"
+
+        # Check metadata present
+        assert "created_at" in entries[0]
+        assert "created_by" in entries[0]
+
+
+@pytest.mark.asyncio
+async def test_block_diff() -> None:
+    """Create a block, update it, then diff v1 vs v2."""
+    async with httpx.AsyncClient() as client:
+        # ── 1. Login ──────────────────────────────────────────────────
+        login_resp = await client.post(
+            f"{BASE_URL}/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+                "organization_id": TEST_ORG_ID,
+            },
+        )
+        assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+        token = login_resp.json()["access_token"]
+
+        # ── 2. Create notebook ────────────────────────────────────────
+        nb_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/",
+            params={"title": "Diff Test NB", "project_id": TEST_PROJECT_ID},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert nb_resp.status_code == 200
+        notebook_id = nb_resp.json()["id"]
+
+        # ── 3. Create block ───────────────────────────────────────────
+        create_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks",
+            json={"block_type": "python", "content": "print('old')"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert create_resp.status_code == 200
+        block_id = create_resp.json()["id"]
+
+        # ── 4. Update block ───────────────────────────────────────────
+        await client.put(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}",
+            json={"content": "print('new')"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        # ── 5. Diff v1 vs v2 ──────────────────────────────────────────
+        diff_resp = await client.get(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}/diff",
+            params={"v1": 1, "v2": 2},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert diff_resp.status_code == 200, (
+            f"Diff failed: {diff_resp.status_code} - {diff_resp.text}"
+        )
+
+        data = diff_resp.json()
+        assert data["v1"] == 1
+        assert data["v2"] == 2
+        assert "diff" in data
+        diff_lines = data["diff"]
+        assert isinstance(diff_lines, list)
+
+        # Should show removal of old and addition of new
+        combined = "\n".join(diff_lines)
+        assert "-print('old')" in combined, (
+            f"Expected removal of old content in diff: {combined}"
+        )
+        assert "+print('new')" in combined, (
+            f"Expected addition of new content in diff: {combined}"
+        )
+
+        # ── 6. Diff invalid version returns 404 ───────────────────────
+        bad_resp = await client.get(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}/diff",
+            params={"v1": 1, "v2": 999},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert bad_resp.status_code == 404, (
+            f"Expected 404 for bad version, got {bad_resp.status_code}"
+        )
