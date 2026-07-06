@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from src.api.dependencies.auth import (
@@ -12,12 +12,20 @@ from src.api.dependencies.auth import (
     get_current_user,
 )
 from src.api.dependencies.events import get_event_producer
+from src.application.compute import (
+    ComputeFactory,
+    ExecutionRequest,
+)
 from src.domain.notebooks.entities import BlockType
 from src.domain.notebooks.events import BlockExecuted, NotebookUpdated
 from src.infrastructure.auth.jwt import TokenData
+from src.infrastructure.compute import InAppProvider
 from src.infrastructure.database import db
 from src.infrastructure.events.producer import EventProducer
-from src.infrastructure.executor import execute_block
+
+# Singleton compute factory with default providers
+_compute_factory = ComputeFactory()
+_compute_factory.register(InAppProvider())
 
 
 class CreateBlockRequest(BaseModel):
@@ -664,6 +672,10 @@ async def diff_block_versions(
 async def execute_block_endpoint(
     notebook_id: UUID,
     block_id: UUID,
+    provider: str = Query(
+        default="in_app",
+        description="Compute provider (in_app, local_jupyter, cloud_gcp)",
+    ),
     user: TokenData = Depends(get_current_user),
     organization_id: UUID = Depends(get_current_org_with_membership),
     event_producer: EventProducer = Depends(get_event_producer),
@@ -709,7 +721,8 @@ async def execute_block_endpoint(
                    f"Supported types: python, rust, sql",
         )
 
-    result = await execute_block(
+    # Build execution request through the compute factory
+    request = ExecutionRequest(
         block_id=block_id,
         notebook_id=notebook_id,
         block_content_id=content_id,
@@ -717,21 +730,30 @@ async def execute_block_endpoint(
         content=content,
         organization_id=organization_id,
         created_by=user.user_id,
+        provider=provider,
     )
+
+    try:
+        result = await _compute_factory.execute(request)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
 
     # Emit event
     event = BlockExecuted(
         aggregate_id=block_id,
         block_id=block_id,
         notebook_id=notebook_id,
-        execution_id=UUID(result["execution_id"]),
+        execution_id=result.execution_id,
         organization_id=organization_id,
-        status=result["status"],
-        duration_ms=result.get("duration_ms"),
+        status=result.status,
+        duration_ms=result.duration_ms,
     )
     await event_producer.emit(event)
 
-    return result
+    return result.model_dump()
 
 
 @router.get("/{notebook_id}/blocks/{block_id}/executions")

@@ -171,8 +171,15 @@ Task format:
 - notes: Added UpdateBlockRequest model, PUT endpoint (creates new block_content version with incremented version), DELETE endpoint (soft delete). 2 new acceptance tests.
 
 ## T-024 — Notebook Block Content History/Diff
-- status: TODO
+- status: DONE
 - deps: T-023
 - agents: @backend, @test
-- acceptance: GET /v1/notebooks/{id}/blocks/{bid}/history returns list of versions with timestamps; GET .../diff?v1=1&v2=2 returns unified diff; 2+ tests pass; ruff + mypy clean
-- notes: Add history endpoint to list all block_content versions and diff endpoint to compare two versions using difflib. Completes the block versioning feature.
+- acceptance: GET /v1/notebooks/{id}/blocks/{bid}/history returns list of versions with timestamps; GET .../diff?v1=1&v2=2 returns unified diff; 12 notebook tests pass, 36 total; ruff + mypy clean
+- notes: History endpoint (ordered by version DESC, includes created_at/created_by) and diff endpoint (unified_diff from difflib, returns diff_lines list, 404 for invalid versions). Commit b6d2a17.
+
+## T-025 — Compute Factory Backend
+- status: TODO
+- deps: T-024
+- agents: @backend, @test, @db
+- acceptance: ComputeProvider abstract class defined; InAppProvider wraps subprocess executor; ComputeFactory resolves provider by name; POST /v1/notebooks/{id}/execute?provider=in_app uses factory; tests pass; ruff + mypy clean
+- notes: First step toward Colab-like notebook execution. Pluggable compute backends. Provider interface in application layer. In-app provider refactors existing executor service.
