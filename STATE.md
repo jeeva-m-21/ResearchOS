@@ -1,27 +1,22 @@
 # STATE.md
 
-## Current Sprint: T-020 — Notebook Block Execution (Backend)
+## Current Sprint: T-021 — Notebook Block Execution (Frontend)
 
-**Goal**: Add sandbox execution environment for notebook blocks. Python blocks run via subprocess, results stored in `executions` table.
+**Goal**: Add a "Run" button to executable code blocks (python/rust/sql) in the notebook UI, showing execution output in a terminal-like panel.
 
-### Status: Most of T-020 is already implemented. Remaining work:
-1. Fix missing exports in domain `__init__.py` (Execution, ExecutionStatus, BlockExecuted)
-2. Write test for block execution (POST execute + GET executions)
-3. Run feedback loop: ruff + mypy + pytest
-4. Commit and run evolution cycle
+### Plan
+1. Add `Execution` interface + `executeBlock()` + `fetchExecutions()` to `frontend/lib/api/notebooks.ts`
+2. Create `frontend/components/notebooks/CodeBlock.tsx` — renders a code block with a Run button + output panel
+3. Refactor `BlockRow` in notebook detail page to use `CodeBlock` for executable block types
+4. Run feedback loop: tsc --noEmit + npm run build
 
 ### In Progress
-- Step 1: Fix `__init__.py` exports
+- (none yet)
 
 ### Done
 - T-019: Notebook Block CRUD (committed 51ebc89)
-- T-020 domain entities: Execution, ExecutionStatus, BlockExecuted event
-- T-020 Alembic migration: executions table (HEAD: 3b7d9e2f1c4a)
-- T-020 executor service: Python subprocess sandbox
-- T-020 API endpoints: POST execute + GET executions
-- opencode config reinforcement loop (committed f35dd0d)
+- T-020: Notebook Block Execution Backend — domain entities, migration, executor, API endpoints, tests (committed eec8a48)
 
 ### Next Steps (after this sprint)
-- Frontend: "Run" button + output display on blocks
-- Notebook block execution frontend
-- Artifact storage
+- Artifact storage backend/frontend
+- Rust/SQL execution support

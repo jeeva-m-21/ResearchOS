@@ -80,3 +80,41 @@ export async function createBlock(
   const res = await api.post(`/v1/notebooks/${notebookId}/blocks`, data)
   return res.data
 }
+
+// ── Block Execution ─────────────────────────────────────────────────
+
+export interface Execution {
+  id: string
+  block_content_id: string
+  status: 'pending' | 'running' | 'success' | 'failed' | 'timeout'
+  started_at: string
+  ended_at: string | null
+  duration_ms: number | null
+  output: string | null
+  error: string | null
+}
+
+export async function executeBlock(
+  notebookId: string,
+  blockId: string,
+): Promise<{
+  execution_id: string
+  status: string
+  output: string | null
+  error: string | null
+  duration_ms: number | null
+}> {
+  const res = await api.post(`/v1/notebooks/${notebookId}/blocks/${blockId}/execute`)
+  return res.data
+}
+
+export async function fetchExecutions(
+  notebookId: string,
+  blockId: string,
+  params?: { limit?: number; offset?: number },
+): Promise<Execution[]> {
+  const res = await api.get(`/v1/notebooks/${notebookId}/blocks/${blockId}/executions`, {
+    params: { limit: params?.limit ?? 10, offset: params?.offset ?? 0 },
+  })
+  return res.data
+}

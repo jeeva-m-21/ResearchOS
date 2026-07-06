@@ -143,8 +143,15 @@ Task format:
 - notes: Block domain entities already existed. Added 3 backend endpoints + migration + 3 tests + frontend API + CreateBlockDialog with type picker. Commit 51ebc89.
 
 ## T-020 — Notebook Block Execution (Backend)
-- status: TODO
+- status: DONE
 - deps: T-019
 - agents: @backend, @db, @test
 - acceptance: POST /v1/notebooks/{id}/blocks/{block_id}/execute runs a Python block and stores result; GET executions returns history; all tests pass; ruff + mypy clean
-- notes: Execution domain entity, migration for executions table, Python subprocess executor, execute + list endpoints, 3+ tests
+- notes: Execution domain entity, migration for executions table, Python subprocess executor, execute + list endpoints, 2 tests. Commit eec8a48.
+
+## T-021 — Notebook Block Execution (Frontend)
+- status: TODO
+- deps: T-020, T-016
+- agents: @frontend, @test
+- acceptance: Python code blocks show a "Run" button; clicking it calls POST .../execute; output area displays execution result; tsc --noEmit clean; npm run build succeeds
+- notes: Add "Run" button to python/rust/sql code blocks in the notebook detail view. Show output in a terminal-like panel below the block. Handle loading/error states.

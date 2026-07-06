@@ -51,6 +51,7 @@ import {
   type Notebook,
   type Block,
 } from '@/lib/api/notebooks'
+import { CodeBlock } from '@/components/notebooks/CodeBlock'
 
 // ---------- block type config ----------
 
@@ -129,9 +130,43 @@ function InfoCard({ icon: Icon, label, value }: { icon: React.ElementType; label
 
 // ---------- block row ----------
 
-function BlockRow({ block }: { block: Block }) {
+const EXECUTABLE_TYPES = ['python', 'rust', 'sql']
+
+function BlockRow({ block, notebookId }: { block: Block; notebookId: string }) {
   const typeConfig = BLOCK_TYPE_CONFIG[block.block_type]
   const TypeIcon = typeConfig?.icon || FileText
+  const isExecutable = EXECUTABLE_TYPES.includes(block.block_type)
+
+  // For executable blocks, render CodeBlock (has its own card styling)
+  if (isExecutable) {
+    return (
+      <div className="flex items-start gap-4">
+        <div className="flex flex-col items-center gap-1 pt-1">
+          <div className={`rounded-lg p-1.5 ${typeConfig?.bg || 'bg-muted'}`}>
+            <TypeIcon className={`h-4 w-4 ${typeConfig?.color || 'text-muted-foreground'}`} />
+          </div>
+          <div className="w-px h-full bg-border" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeConfig?.bg || 'bg-muted'} ${typeConfig?.color || 'text-muted-foreground'}`}>
+              {typeConfig?.label || block.block_type}
+            </span>
+            <span className="text-xs text-muted-foreground">Block #{block.position + 1}</span>
+            <div className="flex-1" />
+            {block.language && (
+              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                {block.language}
+              </span>
+            )}
+          </div>
+          <CodeBlock block={block} notebookId={notebookId} />
+        </div>
+      </div>
+    )
+  }
+
+  // Non-executable blocks — read-only display
   const content = block.content || ''
 
   return (
@@ -407,7 +442,7 @@ export default function NotebookDetailPage() {
         ) : (
           <div className="space-y-3">
             {blocks.map((block) => (
-              <BlockRow key={block.id} block={block} />
+              <BlockRow key={block.id} block={block} notebookId={notebookId} />
             ))}
           </div>
         )}
