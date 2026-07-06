@@ -37,7 +37,11 @@
     "docs/01-high-level-architecture.md",
     "docs/02-domain-model.md",
     "docs/03-database-schema.md",
-    "docs/09-event-architecture.md"
+    "docs/09-event-architecture.md",
+    "docs/06-search-architecture.md",
+    "docs/08-notebook-architecture.md",
+    ".opencode/agents/orchestrator.md",
+    "STATE.md"
   ],
   "references": {
     "sdk": {
@@ -47,6 +51,18 @@
     "backend": {
       "path": "backend/src",
       "description": "Use for backend API and domain code"
+    },
+    "frontend": {
+      "path": "frontend",
+      "description": "Use for Next.js frontend implementation"
+    },
+    "docs": {
+      "path": "docs",
+      "description": "Architecture and design documentation"
+    },
+    "tests": {
+      "path": "backend/tests",
+      "description": "Backend test files"
     }
   },
   "permission": {

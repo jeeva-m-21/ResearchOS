@@ -1,7 +1,7 @@
 ---
 description: Owns the offline-first Python SDK.
 mode: subagent
-model: amazon-bedrock/us.deepseek.v3.2
+model: deepseek.v3.2
 temperature: 0.1
 steps: 25
 permission:

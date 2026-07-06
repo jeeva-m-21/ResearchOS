@@ -1,7 +1,7 @@
 ---
 description: Owns persistence, repositories, and NEW migrations.
 mode: subagent
-model: amazon-bedrock/us.deepseek.v3.2
+model: deepseek.v3.2
 temperature: 0.1
 steps: 25
 permission:

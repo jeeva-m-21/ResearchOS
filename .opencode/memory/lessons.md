@@ -70,3 +70,39 @@ Persistent knowledge that prevents repeating mistakes and accelerates developmen
 - **Confidence**: High.
 - **Reusability**: Always. Check bind mounts before docker cp.
 - **Tags**: docker, bind-mount, docker-cp
+
+### 2026-07-06: Alembic Autogenerate Fails Without pgvector Installed
+- **Problem**: Running `alembic revision --autogenerate` fails with `ModuleNotFoundError: No module named 'pgvector'` because existing migrations import `pgvector.sqlalchemy`.
+- **Root Cause**: The migration `4ad09203efc6_create_nodes_table_for_search.py` imports Vector from pgvector, which must be importable for alembic to load the revision tree.
+- **Solution**: Either `pip install pgvector` in the container first, or create migration files manually without autogenerate.
+- **Evidence**: T-019 migration creation.
+- **Confidence**: High.
+- **Reusability**: Every new migration.
+- **Tags**: alembic, pgvector, migration, autogenerate
+
+### 2026-07-06: JSONB Type Requires sa.dialects.postgresql Prefix in Alembic
+- **Problem**: `sa.Column('metadata', sa.JSONB(), ...)` fails — `sqlalchemy` has no `JSONB` attribute.
+- **Root Cause**: JSONB is a PostgreSQL-specific type, accessed via `sa.dialects.postgresql.JSONB`, not `sa.JSONB`.
+- **Solution**: Use `sa.dialects.postgresql.JSONB()` for JSONB columns in raw Alembic migrations.
+- **Evidence**: Fixed in migration `2a8f9c1e3d5b`.
+- **Confidence**: High.
+- **Reusability**: Any Alembic migration with JSONB columns.
+- **Tags**: alembic, postgres, jsonb, sqlalchemy
+
+### 2026-07-06: Axios POST with JSON Body vs Params Confusion
+- **Problem**: Frontend POST to backend block endpoint failed — Axios was sending params as query string when body was expected.
+- **Root Cause**: Axios `api.post(url, null, { params })` sends null body with query params. To send a JSON body, use `api.post(url, data)`.
+- **Solution**: Use `api.post(url, data)` for JSON bodies; only use `params` for query string parameters.
+- **Evidence**: T-019 frontend implementation (createBlock switched to body-based POST).
+- **Confidence**: High.
+- **Reusability**: Every frontend API call.
+- **Tags**: axios, http, frontend, api
+
+### 2026-07-06: shadcn/ui Component Dependencies Must Be Installed Separately
+- **Problem**: Frontend build failed because `label`, `select`, `textarea` components were imported but not installed.
+- **Root Cause**: shadcn/ui's modular architecture requires each component to be explicitly added via `npx shadcn@latest add <component>`.
+- **Solution**: Run `npx shadcn@latest add label select textarea --yes` to install missing components.
+- **Evidence**: T-019 frontend build fix.
+- **Confidence**: High.
+- **Reusability**: Any new shadcn component used in the frontend.
+- **Tags**: shadcn, ui, frontend, components

@@ -1,7 +1,7 @@
 ---
 description: Read-only code review gate. Approves or requests changes.
 mode: subagent
-model: amazon-bedrock/us.deepseek.v3.2
+model: deepseek.v3.2
 temperature: 0.1
 steps: 15
 permission:

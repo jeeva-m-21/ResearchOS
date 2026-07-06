@@ -14,16 +14,38 @@
       "evidence": "Ruff check returned exit code 1 with E501/F841 errors"
     },
     {
-      "id": "R-2026-07-04",
+      "id": "P-2026-07-06-0",
+      "problem": "Fix subagent model name format across .opencode/agents/*.md",
+      "expected_benefit": "Subagent delegation works without 'Model not found' errors",
+      "implementation_cost": "low",
+      "risk": "low",
+      "rollback_strategy": "git checkout -- .opencode/agents/",
+      "priority_score": 90,
+      "status": "resolved",
+      "evidence": "Opportunity O-003 — fixed all 5 subagent configs"
+    },
+    {
+      "id": "R-2026-07-06",
       "type": "reflection",
       "report": {
-        "timestamp": "2026-07-04T17:25:47Z",
-        "what_was_accomplished": ["Evolution cycle executed"],
+        "timestamp": "2026-07-06T12:00:00Z",
+        "what_was_accomplished": [
+          "T-018: Project-level context + Kaggle-inspired topbar",
+          "T-019: Notebook block CRUD backend + frontend",
+          "12 backend endpoints live, 27 tests passing",
+          "Frontend: experiments, notebooks, search, project UI all built"
+        ],
         "what_failed": [],
-        "what_was_learned": ["Found 2 issues during analysis"],
+        "what_was_learned": [
+          "block_contents table was not in migration — had to create a new migration",
+          "JSONB type requires sa.dialects.postgresql prefix in Alembic",
+          "shadcn components must be individually installed"
+        ],
         "what_can_improve": [
-          "Add coverage tracking to evolution cycle",
-          "Automate prompt scoring based on success rate"
+          "Add pre-flight check for database schema before writing endpoints",
+          "Consolidate shadcn component installation into a setup script",
+          "Add coverage tracking to learn.py",
+          "Fix the 163 pre-existing mypy errors"
         ]
       }
     }

@@ -140,4 +140,4 @@ Task format:
 - deps: T-008, T-016
 - agents: @backend, @test, @frontend
 - acceptance: Can create/list/get blocks via API; frontend shows real blocks instead of mock data; all 27 tests pass; tsc + build clean
-- notes: Block domain entities already existed. Added 3 backend endpoints + migration + 3 tests + frontend API + CreateBlockDialog with type picker. Commit ???.
+- notes: Block domain entities already existed. Added 3 backend endpoints + migration + 3 tests + frontend API + CreateBlockDialog with type picker. Commit 51ebc89.

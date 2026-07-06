@@ -36,3 +36,10 @@ This file tracks architectural decisions and their outcomes over time.
 - **Alternatives considered**: Kafka (overkill now), RabbitMQ (no stream replay), NATS.
 - **Outcome**: Implemented for experiment lifecycle, DLQ, consumer groups. All 28 tests pass.
 - **Confidence**: High.
+
+### 2026-07-06: Block Content Versioning via Immutable BlockContents Table
+- **Decision**: Content changes for blocks create new rows in `block_contents` (immutable), while `blocks.current_version` points to the active version.
+- **Rationale**: Enables full audit trail per block, rollback to any prior version, and parallel editing without conflicts.
+- **Alternatives considered**: JSONB column on blocks table (loses history), single content field with overwrite (no audit).
+- **Outcome**: Successfully deployed with T-019. `GET /blocks` joins blocks + block_contents on current_version. All 27 tests pass.
+- **Confidence**: High.

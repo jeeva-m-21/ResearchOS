@@ -2,9 +2,11 @@
   "schema_version": "1.0",
   "description": "Historical tracking of build, test, and development metrics",
   "latest": {
-    "test_count": 18,
-    "ruff_errors": 1,
-    "mypy_errors": 163
+    "test_count": 27,
+    "ruff_errors": 0,
+    "mypy_errors": 0,
+    "tsc_errors": 0,
+    "build_success": true
   },
   "history": [
     {
@@ -46,6 +48,32 @@
       "mypy_errors": 0,
       "task": "T-010 — SDK Sync + learning module",
       "commit": "caae373"
+    },
+    {
+      "date": "2026-07-05",
+      "test_count": 24,
+      "ruff_errors": 0,
+      "mypy_errors": 0,
+      "task": "T-013..T-017 — Frontend UI suite",
+      "commit": "ed98072"
+    },
+    {
+      "date": "2026-07-05",
+      "test_count": 24,
+      "ruff_errors": 0,
+      "mypy_errors": 0,
+      "task": "T-018 — Project context + topbar",
+      "commit": "ba8a9d1"
+    },
+    {
+      "date": "2026-07-06",
+      "test_count": 27,
+      "ruff_errors": 0,
+      "mypy_errors": 0,
+      "tsc_errors": 0,
+      "build_success": true,
+      "task": "T-019 — Notebook block CRUD",
+      "commit": "51ebc89"
     }
   ]
 }

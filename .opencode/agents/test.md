@@ -1,7 +1,7 @@
 ---
 description: Writes ONE focused test per slice. Touches tests only.
 mode: subagent
-model: amazon-bedrock/us.deepseek.v3.2
+model: deepseek.v3.2
 temperature: 0.1
 steps: 20
 permission:

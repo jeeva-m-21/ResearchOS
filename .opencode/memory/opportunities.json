@@ -36,7 +36,9 @@
       "estimated_effort": "small",
       "confidence": "high",
       "recommended_action": "Update subagent .md files to use correct model name format",
-      "status": "open"
+      "status": "resolved",
+      "resolution": "Fixed all 5 subagent configs (backend, db, sdk, reviewer, test) to use 'deepseek.v3.2'",
+      "resolved_at": "2026-07-06T12:00:00Z"
     },
     {
       "id": "O-004",
