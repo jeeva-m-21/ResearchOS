@@ -11,7 +11,6 @@ import {
   BookOpen,
   FileText,
   Activity,
-  Sparkles,
   Play,
   ArrowRight,
   TrendingUp,
@@ -185,7 +184,7 @@ function ResearchTips() {
   return (
     <div className="rounded-xl bg-gradient-to-br from-primary/5 to-primary/0 p-5 shadow-sm border border-primary/10">
       <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-primary" />
+        <Activity className="h-4 w-4 text-primary" />
         Research Tips
       </h2>
       <div className="space-y-3">
@@ -214,7 +213,7 @@ function AnalyticsHeader() {
     <div>
       <div className="flex items-center gap-3">
         <div className="rounded-xl bg-primary/10 p-2.5">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <Activity className="h-5 w-5 text-primary" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">

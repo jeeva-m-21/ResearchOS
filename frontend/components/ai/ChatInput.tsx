@@ -10,13 +10,13 @@ interface ChatInputProps {
   onStop: () => void
   isLoading: boolean
   disabled?: boolean
+  placeholder?: string
 }
 
-export function ChatInput({ onSend, onStop, isLoading, disabled }: ChatInputProps) {
+export function ChatInput({ onSend, onStop, isLoading, disabled, placeholder }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current
     if (el) {
@@ -25,7 +25,6 @@ export function ChatInput({ onSend, onStop, isLoading, disabled }: ChatInputProp
     }
   }, [input])
 
-  // Focus on mount
   useEffect(() => {
     textareaRef.current?.focus()
   }, [])
@@ -55,7 +54,7 @@ export function ChatInput({ onSend, onStop, isLoading, disabled }: ChatInputProp
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask about your research..."
+          placeholder={placeholder || 'Ask about your research...'}
           rows={1}
           disabled={disabled || isLoading}
           className={cn(

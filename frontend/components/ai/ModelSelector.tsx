@@ -9,14 +9,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ModelInfo, fetchModels } from '@/lib/api/ask'
-import { Sparkles } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface ModelSelectorProps {
   value: string
   onChange: (model: string) => void
+  compact?: boolean
 }
 
-export function ModelSelector({ value, onChange }: ModelSelectorProps) {
+export function ModelSelector({ value, onChange, compact }: ModelSelectorProps) {
   const [models, setModels] = useState<ModelInfo[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -27,13 +28,11 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
         const fetched = await fetchModels()
         if (!cancelled) {
           setModels(fetched)
-          // Set default if none selected
           if (!value && fetched.length > 0) {
             onChange(fetched[0].id)
           }
         }
       } catch {
-        // Models API might not be available — use sensible defaults
         if (!cancelled) {
           setModels([
             { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', description: 'OpenAI GPT-4o', available: true },
@@ -49,7 +48,6 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
     return () => { cancelled = true }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Group models by provider
   const grouped = models.reduce<Record<string, ModelInfo[]>>((acc, m) => {
     if (!acc[m.provider]) acc[m.provider] = []
     acc[m.provider].push(m)
@@ -62,8 +60,12 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
       onValueChange={onChange}
       disabled={loading}
     >
-      <SelectTrigger className="h-8 w-[180px] text-xs border-dashed">
-        <Sparkles className="h-3.5 w-3.5 mr-1 text-purple-500" />
+      <SelectTrigger
+        className={cn(
+          'text-xs border-dashed',
+          compact ? 'h-7 w-[140px]' : 'h-8 w-[180px]',
+        )}
+      >
         <SelectValue placeholder={loading ? 'Loading...' : 'Select model'} />
       </SelectTrigger>
       <SelectContent>

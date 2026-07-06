@@ -31,7 +31,6 @@ import {
   ChevronDown,
   LogOut,
   Building2,
-  Sparkles,
   Plus,
   Beaker,
   NotebookIcon,
@@ -39,7 +38,7 @@ import {
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard', label: 'Chat', icon: MessageSquare },
+  { href: '/dashboard', label: 'Home', icon: MessageSquare },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/experiments', label: 'Experiments', icon: FlaskConical },
   { href: '/dashboard/notebooks', label: 'Notebooks', icon: BookOpen },
@@ -356,7 +355,7 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
       <div className="p-4 border-b">
         <Link href="/dashboard" className="flex items-center gap-2 text-lg font-bold" onClick={onNavClick}>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
+            <span className="text-xs font-bold text-primary-foreground">R</span>
           </div>
           ResearchOS
         </Link>

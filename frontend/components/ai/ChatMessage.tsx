@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Sparkles, User } from 'lucide-react'
+import { Bot, User } from 'lucide-react'
 
 export interface Message {
   id: string
@@ -21,7 +21,6 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, isLoading }: ChatMessageProps) {
   const isUser = message.role === 'user'
-  const isAssistant = message.role === 'assistant'
 
   return (
     <div
@@ -40,8 +39,8 @@ export function ChatMessage({ message, isLoading }: ChatMessageProps) {
           </Avatar>
         ) : (
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-purple-600 text-white text-xs">
-              <Sparkles className="h-4 w-4" />
+            <AvatarFallback className="bg-foreground/10 text-foreground text-xs">
+              <Bot className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
         )}
@@ -73,7 +72,6 @@ export function ChatMessage({ message, isLoading }: ChatMessageProps) {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                // Override code blocks for better styling
                 code({ className, children, ...props }) {
                   const isInline = !className
                   return isInline ? (
