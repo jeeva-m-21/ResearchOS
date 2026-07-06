@@ -11,7 +11,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useProjectStore } from '@/lib/store/project'
 import { useAuthStore } from '@/lib/store/auth'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   FlaskConical,
@@ -204,7 +203,6 @@ export function ChatPanel() {
 
   const currentProjectId = useProjectStore((s) => s.currentProjectId)
   const { user } = useAuthStore()
-  const router = useRouter()
 
   const hour = new Date().getHours()
   let greeting = 'evening'
