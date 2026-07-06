@@ -1,4 +1,5 @@
 """Notebook endpoints"""
+from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
@@ -22,6 +23,13 @@ class CreateBlockRequest(BaseModel):
     """Request model for creating a block"""
     block_type: str
     content: str
+    language: Optional[str] = None
+    position: Optional[int] = None
+
+
+class UpdateBlockRequest(BaseModel):
+    """Request model for updating a block"""
+    content: Optional[str] = None
     language: Optional[str] = None
     position: Optional[int] = None
 
@@ -344,6 +352,187 @@ async def get_block(
     result["language"] = result.pop("language", None)
     result["content_version"] = result.pop("content_version", None)
     return result
+
+
+@router.put("/{notebook_id}/blocks/{block_id}")
+async def update_block(
+    notebook_id: UUID,
+    block_id: UUID,
+    body: UpdateBlockRequest,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+    event_producer: EventProducer = Depends(get_event_producer),
+) -> dict[str, Any]:
+    """Update a block — creates a new version of the block content."""
+    # Verify the block exists and belongs to the notebook/org
+    row = await db.fetch_one(
+        """
+        SELECT b.id, b.position, b.current_version
+        FROM blocks b
+        WHERE b.id = $1
+        AND b.notebook_id = $2
+        AND b.organization_id = $3
+        AND b.deleted_at IS NULL
+        """,
+        block_id, notebook_id, organization_id,
+    )
+
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Block not found",
+        )
+
+    current_version = row["current_version"]
+
+    # If content or language is provided, create a new block_content version
+    if body.content is not None or body.language is not None:
+        new_version = current_version + 1
+
+        # Fetch current content to use as fallback
+        current_content_row = await db.fetch_one(
+            """
+            SELECT content, language
+            FROM block_contents
+            WHERE block_id = $1 AND version = $2
+            """,
+            block_id, current_version,
+        )
+
+        content_value = (
+            body.content
+            if body.content is not None
+            else (current_content_row["content"] if current_content_row else "")
+        )
+        language_value = (
+            body.language
+            if body.language is not None
+            else (current_content_row["language"] if current_content_row else None)
+        )
+
+        content_id = uuid4()
+        await db.execute(
+            """
+            INSERT INTO block_contents
+                (id, block_id, organization_id, version, content, language, created_by)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            """,
+            content_id, block_id, organization_id,
+            new_version, content_value, language_value, user.user_id,
+        )
+
+        # Update block's current_version
+        await db.execute(
+            """
+            UPDATE blocks
+            SET current_version = $1, updated_at = $2
+            WHERE id = $3
+            """,
+            new_version, datetime.utcnow(), block_id,
+        )
+        current_version = new_version
+    else:
+        # Still update the updated_at timestamp
+        await db.execute(
+            """
+            UPDATE blocks
+            SET updated_at = $1
+            WHERE id = $2
+            """,
+            datetime.utcnow(), block_id,
+        )
+
+    # Update position if provided
+    if body.position is not None:
+        await db.execute(
+            """
+            UPDATE blocks
+            SET position = $1, updated_at = $2
+            WHERE id = $3
+            """,
+            body.position, datetime.utcnow(), block_id,
+        )
+
+    # Emit event
+    event = NotebookUpdated(
+        aggregate_id=notebook_id,
+        notebook_id=notebook_id,
+        organization_id=organization_id,
+        operation="update_block",
+    )
+    await event_producer.emit(event)
+
+    # Return the updated block with its content
+    updated_row = await db.fetch_one(
+        """
+        SELECT
+            b.id, b.notebook_id, b.block_type, b.position,
+            b.current_version, b.created_at, b.updated_at,
+            bc.content, bc.language, bc.version as content_version
+        FROM blocks b
+        LEFT JOIN block_contents bc
+            ON bc.block_id = b.id
+            AND bc.version = b.current_version
+        WHERE b.id = $1
+        """,
+        block_id,
+    )
+
+    result = dict(updated_row)
+    result["content"] = result.pop("content", None)
+    result["language"] = result.pop("language", None)
+    result["content_version"] = result.pop("content_version", None)
+    return result
+
+
+@router.delete("/{notebook_id}/blocks/{block_id}")
+async def delete_block(
+    notebook_id: UUID,
+    block_id: UUID,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+    event_producer: EventProducer = Depends(get_event_producer),
+) -> dict[str, str]:
+    """Soft-delete a block."""
+    # Verify the block exists and belongs to the notebook/org
+    row = await db.fetch_one(
+        """
+        SELECT b.id
+        FROM blocks b
+        WHERE b.id = $1
+        AND b.notebook_id = $2
+        AND b.organization_id = $3
+        AND b.deleted_at IS NULL
+        """,
+        block_id, notebook_id, organization_id,
+    )
+
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Block not found",
+        )
+
+    # Soft delete
+    await db.execute(
+        """
+        UPDATE blocks
+        SET deleted_at = $1
+        WHERE id = $2
+        """,
+        datetime.utcnow(), block_id,
+    )
+
+    # Emit event
+    event = NotebookUpdated(
+        aggregate_id=notebook_id,
+        notebook_id=notebook_id,
+        organization_id=organization_id,
+        operation="remove_block",
+    )
+    await event_producer.emit(event)
+
+    return {"status": "deleted", "id": str(block_id)}
 
 
 # ── Block Execution ────────────────────────────────────────────────────

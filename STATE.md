@@ -1,26 +1,22 @@
 # STATE.md
 
-## Current Sprint: T-022 — Artifact Storage Backend
+## Current Sprint: T-023 — Notebook Block Editing (Update/Delete)
 
-**Goal**: Add artifact storage — upload, list, and retrieve files/artifacts linked to experiments and notebooks. MVP uses local filesystem storage.
+**Goal**: Add PUT and DELETE endpoints for notebook blocks. Blocks are versioned — updating creates a new `block_content` entry with incremented version number. Deleting sets `deleted_at` (soft delete).
 
-### Plan
-1. Create domain entities (`Artifact`, `ArtifactVersion`) + events (`ArtifactUploaded`)
-2. Create Alembic migration for `artifacts` + `artifact_versions` tables
-3. Create storage adapter (local filesystem in a configurable directory)
-4. Create API endpoints (`POST /v1/artifacts/upload`, `GET /v1/artifacts/`, `GET /v1/artifacts/{id}`)
-5. Write tests for artifact CRUD
-6. Run feedback loop: ruff + mypy + pytest
-
-### In Progress
-- (none yet)
+### Result
+✅ All 34 tests pass (10 notebook tests, 2 new)
+✅ ruff + mypy clean
+✅ Committed
 
 ### Done
 - T-019: Notebook Block CRUD (committed 51ebc89)
 - T-020: Notebook Block Execution Backend (committed eec8a48)
 - T-021: Notebook Block Execution Frontend (committed d0b5d44)
+- T-022: Artifact Storage Backend (committed 43319e2)
+- **T-023: Notebook Block Editing (Update/Delete)** ✅
 
-### Next Steps (after this sprint)
-- Artifact frontend (upload UI, artifact list, download)
-- Notebook block editing (update/delete)
+### Next Steps
+- Notebook block content history/diff endpoint
 - Rust/SQL execution support
+- Artifact frontend (upload UI, artifact list, download)

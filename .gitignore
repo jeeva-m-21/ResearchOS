@@ -82,3 +82,6 @@ Thumbs.db
 
 # Subagent working memory
 backend/.opencode/
+
+# Test-generated artifact files
+backend/data/artifacts/

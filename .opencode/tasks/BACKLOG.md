@@ -157,15 +157,15 @@ Task format:
 - notes: Add "Run" button to python/rust/sql code blocks in the notebook detail view. Show output in a terminal-like panel below the block. Handle loading/error states. Commit d0b5d44.
 
 ## T-022 — Artifact Storage Backend
-- status: TODO
+- status: DONE
 - deps: none
 - agents: @backend, @db, @test
-- acceptance: POST /v1/artifacts/upload creates artifact entry and returns metadata; GET /v1/artifacts/ lists artifacts; 2+ tests pass; ruff + mypy clean
-- notes: Domain entities already defined. Need migration for artifacts + artifact_versions + artifact_lineage tables, infrastructure for S3/MinIO upload, and API endpoints. Upload to local filesystem for MVP.
+- acceptance: POST /v1/artifacts/upload creates artifact entry and returns metadata; GET /v1/artifacts/ lists artifacts; 3 tests pass; ruff + mypy clean
+- notes: Domain entities, migration, LocalStorage adapter, API endpoints (upload/list/get/download), and 3 acceptance tests. Commit 43319e2.
 
 ## T-023 — Notebook Block Editing (Update/Delete)
-- status: TODO
+- status: DONE
 - deps: T-019
 - agents: @backend, @test
-- acceptance: PUT /v1/notebooks/{id}/blocks/{bid} updates block content and returns new version; DELETE ... removes block; tests pass; ruff + mypy clean
-- notes: Missing PUT/PATCH/DELETE endpoints for notebook blocks. Blocks are versioned so update creates new block_content entry.
+- acceptance: PUT /v1/notebooks/{id}/blocks/{bid} updates block content and returns new version; DELETE ... removes block; 10 notebook tests pass; 34 total tests pass; ruff + mypy clean
+- notes: Added UpdateBlockRequest model, PUT endpoint (creates new block_content version with incremented version), DELETE endpoint (soft delete). 2 new acceptance tests.

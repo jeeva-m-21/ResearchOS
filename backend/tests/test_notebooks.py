@@ -444,3 +444,134 @@ async def test_execute_block_bad_type() -> None:
             f"Expected 400 for markdown, got {exec_resp.status_code}: "
             f"{exec_resp.text}"
         )
+
+
+# ── Block Update/Delete tests ─────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_update_block() -> None:
+    """Create a block, update its content, verify version increments."""
+    async with httpx.AsyncClient() as client:
+        # ── 1. Login ──────────────────────────────────────────────────
+        login_resp = await client.post(
+            f"{BASE_URL}/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+                "organization_id": TEST_ORG_ID,
+            },
+        )
+        assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+        token = login_resp.json()["access_token"]
+
+        # ── 2. Create notebook ────────────────────────────────────────
+        nb_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/",
+            params={"title": "Update Block NB", "project_id": TEST_PROJECT_ID},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert nb_resp.status_code == 200
+        notebook_id = nb_resp.json()["id"]
+
+        # ── 3. Create a python block ──────────────────────────────────
+        create_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks",
+            json={
+                "block_type": "python",
+                "content": "print('v1')",
+                "language": "python",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert create_resp.status_code == 200
+        block_id = create_resp.json()["id"]
+        assert create_resp.json()["current_version"] == 1
+
+        # ── 4. Update the block content ───────────────────────────────
+        update_resp = await client.put(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}",
+            json={
+                "content": "print('v2')",
+                "language": "python",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert update_resp.status_code == 200, (
+            f"Update block failed: {update_resp.status_code} - {update_resp.text}"
+        )
+
+        data = update_resp.json()
+        assert data["content"] == "print('v2')"
+        assert data["language"] == "python"
+        assert data["current_version"] == 2, (
+            f"Expected version 2, got {data['current_version']}"
+        )
+        assert data["content_version"] == 2
+
+        # ── 5. Verify by GET-ing the block ────────────────────────────
+        get_resp = await client.get(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert get_resp.status_code == 200
+        assert get_resp.json()["content"] == "print('v2')"
+        assert get_resp.json()["content_version"] == 2
+
+
+@pytest.mark.asyncio
+async def test_delete_block() -> None:
+    """Create a block, delete it, verify 404 on subsequent GET."""
+    async with httpx.AsyncClient() as client:
+        # ── 1. Login ──────────────────────────────────────────────────
+        login_resp = await client.post(
+            f"{BASE_URL}/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+                "organization_id": TEST_ORG_ID,
+            },
+        )
+        assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+        token = login_resp.json()["access_token"]
+
+        # ── 2. Create notebook ────────────────────────────────────────
+        nb_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/",
+            params={"title": "Delete Block NB", "project_id": TEST_PROJECT_ID},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert nb_resp.status_code == 200
+        notebook_id = nb_resp.json()["id"]
+
+        # ── 3. Create a block ─────────────────────────────────────────
+        create_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks",
+            json={
+                "block_type": "markdown",
+                "content": "To be deleted",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert create_resp.status_code == 200
+        block_id = create_resp.json()["id"]
+
+        # ── 4. Delete the block ───────────────────────────────────────
+        del_resp = await client.delete(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert del_resp.status_code == 200, (
+            f"Delete block failed: {del_resp.status_code} - {del_resp.text}"
+        )
+        assert del_resp.json() == {"status": "deleted", "id": block_id}
+
+        # ── 5. Verify GET returns 404 (soft delete) ───────────────────
+        get_resp = await client.get(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert get_resp.status_code == 404, (
+            f"Expected 404 for deleted block, got {get_resp.status_code}: "
+            f"{get_resp.text}"
+        )
