@@ -319,3 +319,128 @@ async def test_get_block() -> None:
         assert data["content"] == r"E = mc^2"
         assert data["position"] == 0
         assert "created_at" in data
+
+
+# ── Block Execution tests ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_execute_python_block() -> None:
+    """Create a notebook with a Python block, execute it, verify success & output."""
+    async with httpx.AsyncClient() as client:
+        # ── 1. Login ──────────────────────────────────────────────────
+        login_resp = await client.post(
+            f"{BASE_URL}/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+                "organization_id": TEST_ORG_ID,
+            },
+        )
+        assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+        token = login_resp.json()["access_token"]
+
+        # ── 2. Create notebook ────────────────────────────────────────
+        nb_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/",
+            params={"title": "Exec Test NB", "project_id": TEST_PROJECT_ID},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert nb_resp.status_code == 200
+        notebook_id = nb_resp.json()["id"]
+
+        # ── 3. Create a Python block ───────────────────────────────────
+        block_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks",
+            json={
+                "block_type": "python",
+                "content": "print('hello world')",
+                "language": "python",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert block_resp.status_code == 200, (
+            f"Create block failed: {block_resp.status_code} - {block_resp.text}"
+        )
+        block_id = block_resp.json()["id"]
+
+        # ── 4. Execute the block ───────────────────────────────────────
+        exec_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}/execute",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert exec_resp.status_code == 200, (
+            f"Execute block failed: {exec_resp.status_code} - {exec_resp.text}"
+        )
+
+        exec_data = exec_resp.json()
+        assert "execution_id" in exec_data
+        assert exec_data["status"] == "success", (
+            f"Expected success, got {exec_data['status']}: {exec_data}"
+        )
+        assert exec_data["output"] is not None
+        assert "hello world" in exec_data["output"]
+        assert "duration_ms" in exec_data
+
+        # ── 5. List executions ────────────────────────────────────────
+        list_resp = await client.get(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}/executions",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert list_resp.status_code == 200, (
+            f"List executions failed: {list_resp.status_code} - {list_resp.text}"
+        )
+
+        exec_list = list_resp.json()
+        assert isinstance(exec_list, list), f"Expected list, got {type(exec_list)}"
+        assert len(exec_list) >= 1
+
+        found = any(e["id"] == exec_data["execution_id"] for e in exec_list)
+        assert found, (
+            f"Execution {exec_data['execution_id']} not found in list: {exec_list}"
+        )
+
+
+@pytest.mark.asyncio
+async def test_execute_block_bad_type() -> None:
+    """Verify that non-executable block types return 400."""
+    async with httpx.AsyncClient() as client:
+        # ── 1. Login ──────────────────────────────────────────────────
+        login_resp = await client.post(
+            f"{BASE_URL}/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+                "organization_id": TEST_ORG_ID,
+            },
+        )
+        assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+        token = login_resp.json()["access_token"]
+
+        # ── 2. Create notebook ────────────────────────────────────────
+        nb_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/",
+            params={"title": "Exec BadType NB", "project_id": TEST_PROJECT_ID},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert nb_resp.status_code == 200
+        notebook_id = nb_resp.json()["id"]
+
+        # ── 3. Create a markdown block (non-executable) ────────────────
+        block_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks",
+            json={"block_type": "markdown", "content": "Just text"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert block_resp.status_code == 200
+        block_id = block_resp.json()["id"]
+
+        # ── 4. Try to execute markdown ─────────────────────────────────
+        exec_resp = await client.post(
+            f"{BASE_URL}/v1/notebooks/{notebook_id}/blocks/{block_id}/execute",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert exec_resp.status_code == 400, (
+            f"Expected 400 for markdown, got {exec_resp.status_code}: "
+            f"{exec_resp.text}"
+        )

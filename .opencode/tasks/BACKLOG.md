@@ -141,3 +141,10 @@ Task format:
 - agents: @backend, @test, @frontend
 - acceptance: Can create/list/get blocks via API; frontend shows real blocks instead of mock data; all 27 tests pass; tsc + build clean
 - notes: Block domain entities already existed. Added 3 backend endpoints + migration + 3 tests + frontend API + CreateBlockDialog with type picker. Commit 51ebc89.
+
+## T-020 — Notebook Block Execution (Backend)
+- status: TODO
+- deps: T-019
+- agents: @backend, @db, @test
+- acceptance: POST /v1/notebooks/{id}/blocks/{block_id}/execute runs a Python block and stores result; GET executions returns history; all tests pass; ruff + mypy clean
+- notes: Execution domain entity, migration for executions table, Python subprocess executor, execute + list endpoints, 3+ tests

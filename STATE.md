@@ -1,32 +1,27 @@
 # STATE.md
 
-## Current Sprint: Notebook Block CRUD (Backend + Frontend)
+## Current Sprint: T-020 — Notebook Block Execution (Backend)
 
-**Goal**: Build CRUD endpoints for notebook blocks, wire them into the frontend to replace mock blocks.
+**Goal**: Add sandbox execution environment for notebook blocks. Python blocks run via subprocess, results stored in `executions` table.
 
-### State: ALL DONE — committed
+### Status: Most of T-020 is already implemented. Remaining work:
+1. Fix missing exports in domain `__init__.py` (Execution, ExecutionStatus, BlockExecuted)
+2. Write test for block execution (POST execute + GET executions)
+3. Run feedback loop: ruff + mypy + pytest
+4. Commit and run evolution cycle
+
+### In Progress
+- Step 1: Fix `__init__.py` exports
 
 ### Done
+- T-019: Notebook Block CRUD (committed 51ebc89)
+- T-020 domain entities: Execution, ExecutionStatus, BlockExecuted event
+- T-020 Alembic migration: executions table (HEAD: 3b7d9e2f1c4a)
+- T-020 executor service: Python subprocess sandbox
+- T-020 API endpoints: POST execute + GET executions
+- opencode config reinforcement loop (committed f35dd0d)
 
-#### Backend
-- `GET /v1/notebooks/{notebook_id}/blocks` — list blocks with current content
-- `POST /v1/notebooks/{notebook_id}/blocks` — create block (type, content, language, position)
-- `GET /v1/notebooks/{notebook_id}/blocks/{block_id}` — get single block
-- Alembic migration `2a8f9c1e3d5b` adds `block_contents` table
-- 3 new tests: `test_create_block`, `test_list_blocks`, `test_get_block`
-
-#### Frontend
-- `lib/api/notebooks.ts`: `Block` type, `fetchBlocks()`, `createBlock()`, `fetchBlock()`
-- `app/dashboard/notebooks/[id]/page.tsx`: Replaced `MOCK_BLOCKS` with real `fetchBlocks()` query; enabled "Add Block" button with `CreateBlockDialog` (block-type picker + content editor)
-- Installed shadcn components: `label`, `select`, `textarea`
-
-#### Quality gates
-- ✅ ruff + mypy clean (my files)
-- ✅ 27/27 tests pass
-- ✅ tsc --noEmit clean
-- ✅ npm run build succeeds
-
-### Next Steps
-- Notebook block execution (run Python/Rust/SQL blocks)
-- Project detail page
-- "All projects" view in dashboard
+### Next Steps (after this sprint)
+- Frontend: "Run" button + output display on blocks
+- Notebook block execution frontend
+- Artifact storage

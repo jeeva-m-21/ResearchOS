@@ -59,3 +59,28 @@ class BlockContent(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
     created_by: UUID
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ExecutionStatus(str, Enum):
+    """Execution status enum"""
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILED = "failed"
+    TIMEOUT = "timeout"
+
+
+class Execution(BaseModel):
+    """Execution entity - result of running a block"""
+    id: UUID = Field(default_factory=uuid4)
+    block_content_id: UUID
+    block_id: UUID
+    notebook_id: UUID
+    organization_id: UUID
+    status: ExecutionStatus = ExecutionStatus.PENDING
+    started_at: datetime = Field(default_factory=datetime.utcnow)
+    ended_at: Optional[datetime] = None
+    duration_ms: Optional[int] = None
+    output: Optional[str] = None
+    error: Optional[str] = None
+    created_by: UUID
