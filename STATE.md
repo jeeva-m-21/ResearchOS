@@ -1,52 +1,32 @@
 # STATE.md
 
-## Current Sprint: Project-Level Context + Kaggle-Inspired Topbar
+## Current Sprint: Notebook Block CRUD (Backend + Frontend)
 
-**Goal**: Make "project" the main organizational level and add a Colab/Kaggle-inspired topbar with project selector, quick-create, and search.
+**Goal**: Build CRUD endpoints for notebook blocks, wire them into the frontend to replace mock blocks.
 
-### Plan
-1. Add `GET /v1/projects/` backend endpoint — DONE
-2. Create `lib/api/projects.ts` + `lib/store/project.ts` — DONE
-3. Redesign topbar with project selector + quick-create + theme toggle + search — DONE
-4. Wire project context into experiments/notebooks API (remove hardcoded project_id) — DONE
-5. Add `POST /v1/projects/` for project creation — DONE
-6. Create CreateProjectDialog component — DONE
-7. Scope dashboard stats to current project — DONE
-8. Run tsc + build + verify — DONE
-
-### In Progress
-- (none)
+### State: ALL DONE — committed
 
 ### Done
 
 #### Backend
-- `projects.py` router: `GET /v1/projects/` (list), `GET /v1/projects/{id}` (get), `POST /v1/projects/` (create)
-- Registered `/v1/projects` router in `main.py`
+- `GET /v1/notebooks/{notebook_id}/blocks` — list blocks with current content
+- `POST /v1/notebooks/{notebook_id}/blocks` — create block (type, content, language, position)
+- `GET /v1/notebooks/{notebook_id}/blocks/{block_id}` — get single block
+- Alembic migration `2a8f9c1e3d5b` adds `block_contents` table
+- 3 new tests: `test_create_block`, `test_list_blocks`, `test_get_block`
 
-#### Frontend Project System
-- `lib/api/projects.ts`: `Project` type + `fetchProjects()` / `fetchProject()` / `createProject()` API calls
-- `lib/store/project.ts`: Zustand store with `persist` middleware; auto-loads projects on auth, defaults to first project, remembers selection; includes `createAndSelectProject()` action
-- `lib/api/experiments.ts`: `fetchExperiments()` now accepts optional `projectId` param; `fetchExperimentsCount()` passes it through
-- `lib/api/notebooks.ts`: Same pattern — dynamic `project_id` from store
+#### Frontend
+- `lib/api/notebooks.ts`: `Block` type, `fetchBlocks()`, `createBlock()`, `fetchBlock()`
+- `app/dashboard/notebooks/[id]/page.tsx`: Replaced `MOCK_BLOCKS` with real `fetchBlocks()` query; enabled "Add Block" button with `CreateBlockDialog` (block-type picker + content editor)
+- Installed shadcn components: `label`, `select`, `textarea`
 
-#### CreateProjectDialog (`components/projects/CreateProjectDialog.tsx`)
-- Dialog with name + description fields, validation, loading/error states
-- Supports both controlled (`open`/`onOpenChange`) and uncontrolled (internal state) modes
-- Wired into topbar QuickCreate dropdown via "New Project" option
-
-#### Topbar Redesign (`app/dashboard/layout.tsx`)
-- **ProjectSelector**: Dropdown in top-left showing all user projects; switch context
-- **QuickCreate**: `+ New` button with dropdown for "New Experiment" / "New Notebook" / "New Project"
-- **TopSearch**: Cmd+K hotkey, focus ring, glassmorphism backdrop
-- **ThemeToggle**: Compact 32×32
-- **UserMenu**: Compact 32×32 avatar dropdown
-
-#### Project-Scoped Dashboard
-- `app/dashboard/page.tsx`: Stats cards show counts for current project; header shows project name
-- `app/dashboard/experiments/page.tsx`: Experiments query scoped to current project via store
-- `app/dashboard/notebooks/page.tsx`: Notebooks query scoped to current project via store
+#### Quality gates
+- ✅ ruff + mypy clean (my files)
+- ✅ 27/27 tests pass
+- ✅ tsc --noEmit clean
+- ✅ npm run build succeeds
 
 ### Next Steps
-- Add project detail page (dedicated view per project)
-- Add "all projects" view in dashboard when multiple projects exist
-- RunningNow / ActivityFeed on dashboard to show project-specific data
+- Notebook block execution (run Python/Rust/SQL blocks)
+- Project detail page
+- "All projects" view in dashboard

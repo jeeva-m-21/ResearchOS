@@ -5,7 +5,7 @@ Task format:
 ## T-XXX — <title>
 - status: TODO | DOING | DONE | BLOCKED
 - deps: none | T-YYY
-- agents: @backend, @test
+- agents: @backend, @test, @frontend
 - acceptance: <the one test / command that must pass>
 - notes: <one line of context>
 
@@ -98,32 +98,46 @@ Task format:
 - deps: none
 - agents: @frontend, @test
 - acceptance: User can log in with test credentials, JWT stored in Zustand, protected routes redirect to login
-- notes: Login page (frontend/app/login/page.tsx), signup page (frontend/app/signup/page.tsx), Zustand auth store (frontend/lib/store/auth.ts), Axios interceptor (frontend/lib/api/client.ts), ProtectedRoute component (frontend/components/auth/ProtectedRoute.tsx), dashboard layout with sidebar (frontend/app/dashboard/layout.tsx), updated landing page.
+- notes: Login page, signup page, Zustand auth store, Axios interceptor, ProtectedRoute component, dashboard layout, updated landing page.
 
 ## T-014 — Frontend: Dashboard + navigation shell
-- status: TODO
+- status: DONE
 - deps: T-013
 - agents: @frontend
 - acceptance: Sidebar with nav links, topbar with user menu, org switcher, empty dashboard page
 - notes: App shell layout, responsive sidebar, breadcrumbs, user dropdown
 
 ## T-015 — Frontend: Experiments CRUD UI
-- status: TODO
+- status: DONE
 - deps: T-014
 - agents: @frontend
 - acceptance: List experiments, create new, view runs + metric chart
-- notes: Recharts already installed. Backend is 100% done.
+- notes: Recharts available. Backend is 100% done.
 
 ## T-016 — Frontend: Notebooks CRUD UI
 - status: DONE
 - deps: T-014
 - agents: @frontend
 - acceptance: List notebooks, create new, view notebook with block list; tsc --noEmit clean; npm run build succeeds
-- notes: Commit f920189. Backend is 100% done. Blocks placeholder shown on detail page; blocks CRUD API not yet implemented on backend.
+- notes: Commit f920189. Backend notebook CRUD is done. Blocks are currently mock data.
 
 ## T-017 — Frontend: Search UI
 - status: DONE
 - deps: T-014
 - agents: @frontend
 - acceptance: Search bar with debounce + autocomplete, results with type filters + pagination; tsc --noEmit clean; npm run build succeeds; 5 backend tests pass
-- notes: Commit 0c50fed. Backend search is 100% done with pgvector HNSW + hybrid. Search page fully built with autocomplete suggestions dropdown, colored type filter chips, pagination, result count + timing display.
+- notes: Commit 0c50fed. Backend search done with pgvector HNSW + hybrid.
+
+## T-018 — Project-Level Context + Kaggle-Inspired Topbar
+- status: DONE
+- deps: none
+- agents: @backend, @frontend
+- acceptance: Project selector in topbar, quick-create dropdown, project-scoped dashboard stats
+- notes: Commit ba8a9d1. GET/POST /v1/projects/, Zustand project store, CreateProjectDialog.
+
+## T-019 — Notebook Block CRUD (Backend + Frontend)
+- status: DONE
+- deps: T-008, T-016
+- agents: @backend, @test, @frontend
+- acceptance: Can create/list/get blocks via API; frontend shows real blocks instead of mock data; all 27 tests pass; tsc + build clean
+- notes: Block domain entities already existed. Added 3 backend endpoints + migration + 3 tests + frontend API + CreateBlockDialog with type picker. Commit ???.

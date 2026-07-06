@@ -3,16 +3,26 @@ from typing import Any, Optional
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 from src.api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
 from src.api.dependencies.events import get_event_producer
+from src.domain.notebooks.entities import BlockType
 from src.domain.notebooks.events import NotebookUpdated
 from src.infrastructure.auth.jwt import TokenData
 from src.infrastructure.database import db
 from src.infrastructure.events.producer import EventProducer
+
+
+class CreateBlockRequest(BaseModel):
+    """Request model for creating a block"""
+    block_type: str
+    content: str
+    language: Optional[str] = None
+    position: Optional[int] = None
 
 router = APIRouter()
 
@@ -148,3 +158,188 @@ async def list_notebooks(
         )
 
     return [dict(nb) for nb in notebooks]
+
+
+# ── Block CRUD ─────────────────────────────────────────────────────────
+
+
+@router.get("/{notebook_id}/blocks")
+async def list_blocks(
+    notebook_id: UUID,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+) -> list[dict[str, Any]]:
+    """List all blocks in a notebook with their current content"""
+    # Verify notebook exists and belongs to organization
+    notebook = await db.fetch_one(
+        """
+        SELECT id FROM notebooks
+        WHERE id = $1 AND organization_id = $2
+        AND deleted_at IS NULL
+        """,
+        notebook_id,
+        organization_id
+    )
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    rows = await db.fetch_all(
+        """
+        SELECT
+            b.id, b.notebook_id, b.block_type, b.position,
+            b.current_version, b.created_at, b.updated_at,
+            bc.content, bc.language, bc.version as content_version
+        FROM blocks b
+        LEFT JOIN block_contents bc
+            ON bc.block_id = b.id
+            AND bc.version = b.current_version
+        WHERE b.notebook_id = $1
+        AND b.organization_id = $2
+        AND b.deleted_at IS NULL
+        ORDER BY b.position ASC
+        """,
+        notebook_id,
+        organization_id
+    )
+
+    result = []
+    for row in rows:
+        block = dict(row)
+        block["content"] = block.pop("content", None)
+        block["language"] = block.pop("language", None)
+        block["content_version"] = block.pop("content_version", None)
+        result.append(block)
+
+    return result
+
+
+@router.post("/{notebook_id}/blocks")
+async def create_block(
+    notebook_id: UUID,
+    body: CreateBlockRequest,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+    event_producer: EventProducer = Depends(get_event_producer),
+) -> dict[str, Any]:
+    """Create a new block in a notebook"""
+    # Verify notebook exists
+    notebook = await db.fetch_one(
+        """
+        SELECT id FROM notebooks
+        WHERE id = $1 AND organization_id = $2
+        AND deleted_at IS NULL
+        """,
+        notebook_id,
+        organization_id
+    )
+    if not notebook:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notebook not found",
+        )
+
+    # Validate block_type
+    if body.block_type not in [bt.value for bt in BlockType]:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                f"Invalid block_type '{body.block_type}'. "
+                f"Valid types: {[bt.value for bt in BlockType]}"
+            ),
+        )
+
+    # Determine position
+    if body.position is None:
+        pos_row = await db.fetch_one(
+            """
+            SELECT COALESCE(MAX(position), -1) + 1 AS next_pos
+            FROM blocks
+            WHERE notebook_id = $1 AND deleted_at IS NULL
+            """,
+            notebook_id
+        )
+        position = pos_row["next_pos"] if pos_row else 0
+    else:
+        position = body.position
+
+    block_id = uuid4()
+    await db.execute(
+        """
+        INSERT INTO blocks (id, notebook_id, organization_id, block_type, position)
+        VALUES ($1, $2, $3, $4, $5)
+        """,
+        block_id, notebook_id, organization_id, body.block_type, position
+    )
+
+    # Insert initial content (version 1)
+    content_id = uuid4()
+    await db.execute(
+        """
+        INSERT INTO block_contents
+            (id, block_id, organization_id, version, content, language, created_by)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        """,
+        content_id, block_id, organization_id,
+        1, body.content, body.language, user.user_id
+    )
+
+    # Emit event
+    event = NotebookUpdated(
+        aggregate_id=notebook_id,
+        notebook_id=notebook_id,
+        organization_id=organization_id,
+        operation="add_block",
+    )
+    await event_producer.emit(event)
+
+    return {
+        "id": str(block_id),
+        "notebook_id": str(notebook_id),
+        "block_type": body.block_type,
+        "position": position,
+        "content": body.content,
+        "language": body.language,
+        "current_version": 1,
+    }
+
+
+@router.get("/{notebook_id}/blocks/{block_id}")
+async def get_block(
+    notebook_id: UUID,
+    block_id: UUID,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+) -> dict[str, Any]:
+    """Get a single block with its current content"""
+    row = await db.fetch_one(
+        """
+        SELECT
+            b.id, b.notebook_id, b.block_type, b.position,
+            b.current_version, b.created_at, b.updated_at,
+            bc.content, bc.language, bc.version as content_version
+        FROM blocks b
+        LEFT JOIN block_contents bc
+            ON bc.block_id = b.id
+            AND bc.version = b.current_version
+        WHERE b.id = $1
+        AND b.notebook_id = $2
+        AND b.organization_id = $3
+        AND b.deleted_at IS NULL
+        """,
+        block_id, notebook_id, organization_id
+    )
+
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Block not found",
+        )
+
+    result = dict(row)
+    result["content"] = result.pop("content", None)
+    result["language"] = result.pop("language", None)
+    result["content_version"] = result.pop("content_version", None)
+    return result

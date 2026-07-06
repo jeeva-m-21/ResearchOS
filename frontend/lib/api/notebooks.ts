@@ -42,3 +42,41 @@ export async function fetchNotebooksCount(projectId?: string): Promise<number> {
     return 0
   }
 }
+
+// ── Block types & API ─────────────────────────────────────────────────
+
+export interface Block {
+  id: string
+  notebook_id: string
+  block_type: string
+  position: number
+  current_version: number
+  created_at: string
+  updated_at: string
+  content: string | null
+  language: string | null
+  content_version: number | null
+}
+
+export async function fetchBlocks(notebookId: string): Promise<Block[]> {
+  const res = await api.get(`/v1/notebooks/${notebookId}/blocks`)
+  return res.data
+}
+
+export async function fetchBlock(notebookId: string, blockId: string): Promise<Block> {
+  const res = await api.get(`/v1/notebooks/${notebookId}/blocks/${blockId}`)
+  return res.data
+}
+
+export async function createBlock(
+  notebookId: string,
+  data: {
+    block_type: string
+    content: string
+    language?: string | null
+    position?: number | null
+  }
+): Promise<Block> {
+  const res = await api.post(`/v1/notebooks/${notebookId}/blocks`, data)
+  return res.data
+}

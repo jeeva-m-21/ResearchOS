@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
   BookOpen,
@@ -21,97 +22,96 @@ import {
   XCircle,
   Play,
   Loader2,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import {
   fetchNotebook,
+  fetchBlocks,
+  createBlock,
   type Notebook,
+  type Block,
 } from '@/lib/api/notebooks'
 
 // ---------- block type config ----------
 
-const BLOCK_TYPE_CONFIG: Record<string, { icon: React.ElementType; label: string; color: string; bg: string; preview: string }> = {
+const BLOCK_TYPE_CONFIG: Record<string, { icon: React.ElementType; label: string; color: string; bg: string }> = {
   markdown: {
     icon: FileText,
     label: 'Markdown',
     color: 'text-green-600 dark:text-green-400',
     bg: 'bg-green-100 dark:bg-green-900/30',
-    preview: '## Research Notes\nThis notebook documents the experimental setup for...',
   },
   python: {
     icon: Code,
     label: 'Python',
     color: 'text-blue-600 dark:text-blue-400',
     bg: 'bg-blue-100 dark:bg-blue-900/30',
-    preview: 'import torch\nimport numpy as np\n\nmodel = torch.nn.Linear(128, 10)',
   },
   rust: {
     icon: Code,
     label: 'Rust',
     color: 'text-orange-600 dark:text-orange-400',
     bg: 'bg-orange-100 dark:bg-orange-900/30',
-    preview: 'fn main() {\n    println!("Hello, research!");\n}',
   },
   sql: {
     icon: Table,
     label: 'SQL',
     color: 'text-purple-600 dark:text-purple-400',
     bg: 'bg-purple-100 dark:bg-purple-900/30',
-    preview: 'SELECT model, AVG(accuracy) as avg_acc\nFROM experiments\nGROUP BY model\nORDER BY avg_acc DESC;',
   },
   latex: {
     icon: Sigma,
     label: 'LaTeX',
     color: 'text-rose-600 dark:text-rose-400',
     bg: 'bg-rose-100 dark:bg-rose-900/30',
-    preview: '\\begin{equation}\n  L(\\theta) = -\\sum_{i} y_i \\log(\\hat{y}_i)\n\\end{equation}',
   },
   mermaid: {
     icon: Image,
     label: 'Diagram',
     color: 'text-teal-600 dark:text-teal-400',
     bg: 'bg-teal-100 dark:bg-teal-900/30',
-    preview: 'graph TD\n    A[Data] --> B[Preprocess]\n    B --> C[Train]',
   },
   metric: {
     icon: BarChart3,
     label: 'Metric',
     color: 'text-amber-600 dark:text-amber-400',
     bg: 'bg-amber-100 dark:bg-amber-900/30',
-    preview: 'accuracy: 0.9562\nloss: 0.1245\nf1: 0.9421',
   },
   citation: {
     icon: MessageSquareQuote,
     label: 'Citation',
     color: 'text-indigo-600 dark:text-indigo-400',
     bg: 'bg-indigo-100 dark:bg-indigo-900/30',
-    preview: 'Vaswani et al., "Attention Is All You Need", NeurIPS 2017',
   },
   ai_summary: {
     icon: BrainCircuit,
     label: 'AI Summary',
     color: 'text-violet-600 dark:text-violet-400',
     bg: 'bg-violet-100 dark:bg-violet-900/30',
-    preview: 'This experiment demonstrates that transfer learning with BERT...',
   },
 }
 
-// ---------- mock blocks for visual demo ----------
-
-const MOCK_BLOCKS = [
-  { id: '1', type: 'markdown', label: 'Introduction', status: 'success' as const },
-  { id: '2', type: 'python', label: 'Data Loading', status: 'success' as const },
-  { id: '3', type: 'python', label: 'Model Training', status: 'running' as const },
-  { id: '4', type: 'metric', label: 'Results', status: 'pending' as const },
-  { id: '5', type: 'latex', label: 'Formulation', status: 'pending' as const },
-]
-
-const EXECUTION_STATUS_CONFIG = {
-  success: { icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
-  failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30' },
-  running: { icon: Play, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-  pending: { icon: Clock, color: 'text-muted-foreground', bg: 'bg-muted' },
-}
+const BLOCK_TYPE_NAMES = Object.keys(BLOCK_TYPE_CONFIG)
 
 // ---------- info card ----------
 
@@ -129,11 +129,10 @@ function InfoCard({ icon: Icon, label, value }: { icon: React.ElementType; label
 
 // ---------- block row ----------
 
-function BlockRow({ block }: { block: typeof MOCK_BLOCKS[0] }) {
-  const typeConfig = BLOCK_TYPE_CONFIG[block.type]
-  const execConfig = EXECUTION_STATUS_CONFIG[block.status]
-  const ExecIcon = execConfig.icon
+function BlockRow({ block }: { block: Block }) {
+  const typeConfig = BLOCK_TYPE_CONFIG[block.block_type]
   const TypeIcon = typeConfig?.icon || FileText
+  const content = block.content || ''
 
   return (
     <div className="group rounded-xl bg-card p-4 shadow-sm border border-border hover:shadow-md hover:border-primary/20 transition-all duration-200">
@@ -150,28 +149,140 @@ function BlockRow({ block }: { block: typeof MOCK_BLOCKS[0] }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeConfig?.bg || 'bg-muted'} ${typeConfig?.color || 'text-muted-foreground'}`}>
-              {typeConfig?.label || block.type}
+              {typeConfig?.label || block.block_type}
             </span>
-            <span className="text-xs text-muted-foreground">{block.label}</span>
+            <span className="text-xs text-muted-foreground">Block #{block.position + 1}</span>
             <div className="flex-1" />
-            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${execConfig.bg} ${execConfig.color}`}>
-              {block.status === 'running' ? (
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-500" />
-                </span>
-              ) : (
-                <ExecIcon className="h-3 w-3" />
-              )}
-              {block.status}
-            </span>
+            {block.language && (
+              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                {block.language}
+              </span>
+            )}
           </div>
           <pre className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 overflow-x-auto mt-2 font-mono leading-relaxed">
-            {typeConfig?.preview || '// content'}
+            {content || '(empty)'}
           </pre>
         </div>
       </div>
     </div>
+  )
+}
+
+// ---------- create block dialog ----------
+
+function CreateBlockDialog({
+  notebookId,
+  open,
+  onOpenChange,
+}: {
+  notebookId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const queryClient = useQueryClient()
+  const [blockType, setBlockType] = useState('markdown')
+  const [content, setContent] = useState('')
+  const [language, setLanguage] = useState('')
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      createBlock(notebookId, {
+        block_type: blockType,
+        content,
+        language: language || null,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blocks', notebookId] })
+      setBlockType('markdown')
+      setContent('')
+      setLanguage('')
+      onOpenChange(false)
+    },
+  })
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus className="h-4 w-4 mr-1" />
+          Add Block
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Add Block</DialogTitle>
+          <DialogDescription>
+            Create a new block in this notebook.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="block-type">Block Type</Label>
+            <Select value={blockType} onValueChange={setBlockType}>
+              <SelectTrigger id="block-type">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                {BLOCK_TYPE_NAMES.map((bt) => {
+                  const cfg = BLOCK_TYPE_CONFIG[bt]
+                  const Icon = cfg.icon
+                  return (
+                    <SelectItem key={bt} value={bt}>
+                      <span className="flex items-center gap-2">
+                        <Icon className={`h-3.5 w-3.5 ${cfg.color}`} />
+                        {cfg.label}
+                      </span>
+                    </SelectItem>
+                  )
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          {(blockType === 'python' || blockType === 'rust' || blockType === 'sql') && (
+            <div className="space-y-2">
+              <Label htmlFor="language">Language (optional)</Label>
+              <Input
+                id="language"
+                placeholder="e.g. python3, rustc, postgresql"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+              />
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="content">Content</Label>
+            <Textarea
+              id="content"
+              placeholder={blockType === 'markdown' ? '# My Heading\n\nSome text...' : '// your code here'}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={8}
+              className="font-mono text-sm"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => mutation.mutate()} disabled={!content.trim() || mutation.isPending}>
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create'
+            )}
+          </Button>
+        </DialogFooter>
+        {mutation.isError && (
+          <p className="text-sm text-destructive mt-2">
+            Failed to create block: {(mutation.error as Error).message}
+          </p>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -182,14 +293,21 @@ export default function NotebookDetailPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const notebookId = params.id as string
+  const [createOpen, setCreateOpen] = useState(false)
 
-  const { data: notebook, isLoading, isError } = useQuery({
+  const { data: notebook, isLoading: nbLoading, isError: nbError } = useQuery({
     queryKey: ['notebook', notebookId],
     queryFn: () => fetchNotebook(notebookId),
     enabled: !!notebookId,
   })
 
-  if (isLoading) {
+  const { data: blocks = [], isLoading: blocksLoading } = useQuery({
+    queryKey: ['blocks', notebookId],
+    queryFn: () => fetchBlocks(notebookId),
+    enabled: !!notebookId,
+  })
+
+  if (nbLoading) {
     return (
       <div className="space-y-4">
         <div className="h-8 w-32 bg-muted rounded-lg animate-pulse" />
@@ -206,7 +324,7 @@ export default function NotebookDetailPage() {
     )
   }
 
-  if (isError || !notebook) {
+  if (nbError || !notebook) {
     return (
       <div className="space-y-4">
         <Button variant="ghost" onClick={() => router.back()}>
@@ -245,14 +363,14 @@ export default function NotebookDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['notebook', notebookId] })}>
+          <Button variant="outline" size="sm" onClick={() => {
+            queryClient.invalidateQueries({ queryKey: ['notebook', notebookId] })
+            queryClient.invalidateQueries({ queryKey: ['blocks', notebookId] })
+          }}>
             <RefreshCw className="h-4 w-4 mr-1" />
             Refresh
           </Button>
-          <Button disabled title="Coming in next update">
-            <Plus className="h-4 w-4 mr-1" />
-            Add Block
-          </Button>
+          <CreateBlockDialog notebookId={notebookId} open={createOpen} onOpenChange={setCreateOpen} />
         </div>
       </div>
 
@@ -263,18 +381,40 @@ export default function NotebookDetailPage() {
         <InfoCard icon={RefreshCw} label="Updated" value={new Date(notebook.updated_at).toLocaleDateString()} />
       </div>
 
-      {/* Block type legend */}
+      {/* Block list */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-foreground">Blocks</h2>
           <span className="text-xs text-muted-foreground">
-            {MOCK_BLOCKS.length} blocks
+            {blocks.length} {blocks.length === 1 ? 'block' : 'blocks'}
           </span>
         </div>
 
+        {blocksLoading ? (
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : blocks.length === 0 ? (
+          <div className="rounded-xl bg-muted/50 p-8 border border-border text-center">
+            <BookOpen className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No blocks yet.</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">
+              Click "Add Block" to create your first block.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {blocks.map((block) => (
+              <BlockRow key={block.id} block={block} />
+            ))}
+          </div>
+        )}
+
         {/* Quick type reference */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {Object.entries(BLOCK_TYPE_CONFIG).slice(0, 6).map(([key, config]) => {
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {Object.entries(BLOCK_TYPE_CONFIG).map(([key, config]) => {
             const Icon = config.icon
             return (
               <span key={key} className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium ${config.bg} ${config.color}`}>
@@ -283,23 +423,6 @@ export default function NotebookDetailPage() {
               </span>
             )
           })}
-        </div>
-
-        {/* Block list */}
-        <div className="space-y-3">
-          {MOCK_BLOCKS.map((block, i) => (
-            <BlockRow key={block.id} block={block} />
-          ))}
-        </div>
-
-        {/* Info callout */}
-        <div className="mt-4 rounded-xl bg-muted/50 p-4 border border-border text-center">
-          <p className="text-sm text-muted-foreground">
-            Block editing, reordering, and execution are coming in the next update.
-          </p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Supported types: Markdown, Python, Rust, SQL, LaTeX, Mermaid, Metrics, Citations, AI Summary
-          </p>
         </div>
       </div>
     </div>
