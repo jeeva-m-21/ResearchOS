@@ -1,15 +1,14 @@
 'use client'
 
-import React from 'react'
-import { ChatPanel } from '@/components/ai/ChatPanel'
-import { Card } from '@/components/ui/card'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function AskPage() {
-  return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
-      <Card className="flex-1 flex flex-col overflow-hidden shadow-sm border-border/60">
-        <ChatPanel />
-      </Card>
-    </div>
-  )
+  const router = useRouter()
+
+  useEffect(() => {
+    router.replace('/dashboard')
+  }, [router])
+
+  return null
 }

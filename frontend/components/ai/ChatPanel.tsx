@@ -5,10 +5,10 @@ import { ChatMessage, type Message } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { ModelSelector } from './ModelSelector'
 import { askStream, type StreamEvent } from '@/lib/api/ask'
-import { Card } from '@/components/ui/card'
-import { MessageSquare, Sparkles, AlertCircle } from 'lucide-react'
+import { MessageSquare, Sparkles, AlertCircle, ArrowDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProjectStore } from '@/lib/store/project'
+import { Button } from '@/components/ui/button'
 
 let messageCounter = 0
 function nextId() {
@@ -35,19 +35,30 @@ export function ChatPanel() {
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState('')
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [showScrollButton, setShowScrollButton] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const currentProjectId = useProjectStore((s) => s.currentProjectId)
 
   // Auto-scroll to bottom
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' })
   }, [])
 
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+
+  // Show scroll-to-bottom button when scrolled up
+  const handleScroll = useCallback(() => {
+    const el = messagesContainerRef.current
+    if (el) {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+      setShowScrollButton(distanceFromBottom > 200)
+    }
+  }, [])
 
   const handleSend = useCallback(
     async (content: string) => {
@@ -95,7 +106,6 @@ export function ChatPanel() {
           } else if (event.type === 'done') {
             setSessionId(event.content.session_id)
           } else if (event.type === 'tool_call') {
-            // Optionally show tool calls in the UI
             collected += `\n\n_🔧 Using tool: **${event.content.name}**..._`
             setMessages((prev) =>
               prev.map((m) =>
@@ -142,56 +152,86 @@ export function ChatPanel() {
     setError(null)
   }, [])
 
+  const hasMessages = messages.length > 1
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b bg-background/50">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-600/10">
-            <Sparkles className="h-4 w-4 text-purple-600" />
-          </div>
-          <h2 className="text-sm font-semibold">AI Assistant</h2>
-          {isLoading && (
-            <span className="text-[10px] text-muted-foreground animate-pulse ml-1">
-              thinking...
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-full relative">
+      {/* Floating header — model selector */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-center pointer-events-none">
+        <div className="pointer-events-auto flex items-center gap-3 bg-background/80 backdrop-blur-sm border border-border/50 rounded-full px-4 py-1.5 shadow-xs mt-3">
           <ModelSelector value={selectedModel} onChange={setSelectedModel} />
-          {messages.length > 1 && (
+          {hasMessages && (
             <button
               onClick={clearChat}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent"
             >
-              Clear
+              New chat
             </button>
           )}
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
-        ))}
+      {/* Messages — centered */}
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto"
+      >
+        <div className="max-w-3xl mx-auto px-4 pt-16 pb-4 space-y-6">
+          {/* Welcome header when no conversation started */}
+          {!hasMessages && (
+            <div className="text-center pt-12 pb-6 animate-fade-in-down">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 mb-5">
+                <Sparkles className="h-7 w-7 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">
+                How can I help you?
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                Ask about your experiments, notebooks, papers, or anything in your research workspace.
+              </p>
+            </div>
+          )}
 
-        {error && (
-          <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 rounded-lg px-4 py-2">
-            <AlertCircle className="h-4 w-4" />
-            {error}
-          </div>
-        )}
+          {messages.map((msg) => (
+            <ChatMessage key={msg.id} message={msg} />
+          ))}
 
-        <div ref={messagesEndRef} />
+          {error && (
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 rounded-lg px-4 py-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Input */}
-      <ChatInput
-        onSend={handleSend}
-        onStop={handleStop}
-        isLoading={isLoading}
-      />
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 rounded-full shadow-md bg-background/80 backdrop-blur-sm"
+            onClick={() => scrollToBottom(true)}
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Input — centered */}
+      <div className="border-t bg-background/95 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-4 py-3">
+          <ChatInput
+            onSend={handleSend}
+            onStop={handleStop}
+            isLoading={isLoading}
+          />
+        </div>
+      </div>
     </div>
   )
 }

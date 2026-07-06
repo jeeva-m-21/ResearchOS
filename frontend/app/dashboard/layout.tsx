@@ -21,7 +21,8 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
 import {
-  LayoutDashboard,
+  MessageSquare,
+  BarChart3,
   FlaskConical,
   BookOpen,
   Search,
@@ -35,16 +36,15 @@ import {
   Beaker,
   NotebookIcon,
   Command,
-  MessageSquare,
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Chat', icon: MessageSquare },
+  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/experiments', label: 'Experiments', icon: FlaskConical },
   { href: '/dashboard/notebooks', label: 'Notebooks', icon: BookOpen },
   { href: '/dashboard/papers', label: 'Papers', icon: FileText },
   { href: '/dashboard/search', label: 'Search', icon: Search },
-  { href: '/dashboard/ask', label: 'Ask AI', icon: MessageSquare },
 ]
 
 function NavLinks({ className, onNavClick }: { className?: string; onNavClick?: () => void }) {
