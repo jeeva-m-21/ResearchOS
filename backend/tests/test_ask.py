@@ -100,9 +100,56 @@ async def test_list_papers_tool_returns_string():
 
 
 @pytest.mark.asyncio
+async def test_edit_paper_tool_returns_string():
+    """The EditPaperTool should return a string result."""
+    from src.application.ai.tools import EditPaperTool
+
+    tool = EditPaperTool()
+    result = await tool.execute(
+        paper_id="00000000-0000-0000-0000-000000000000",
+        title="Updated Title",
+    )
+    assert isinstance(result, str)
+    assert "paper" in result.lower() or "not found" in result.lower()
+
+
+@pytest.mark.asyncio
+async def test_create_experiment_tool_returns_string():
+    """The CreateExperimentTool should return a string result."""
+    from src.application.ai.tools import CreateExperimentTool
+
+    tool = CreateExperimentTool()
+    result = await tool.execute(
+        project_id="00000000-0000-0000-0000-000000000000",
+        name="Test Experiment",
+    )
+    assert isinstance(result, str)
+    # Should say experiment created or project not found
+    assert "experiment" in result.lower() or "project" in result.lower()
+
+
+@pytest.mark.asyncio
+async def test_create_notebook_tool_returns_string():
+    """The CreateNotebookTool should return a string result."""
+    from src.application.ai.tools import CreateNotebookTool
+
+    tool = CreateNotebookTool()
+    result = await tool.execute(
+        project_id="00000000-0000-0000-0000-000000000000",
+        title="Test Notebook",
+    )
+    assert isinstance(result, str)
+    # Should say notebook created or project not found
+    assert "notebook" in result.lower() or "project" in result.lower()
+
+
+@pytest.mark.asyncio
 async def test_all_tool_definitions_have_required_fields():
     """Every tool must have name, description, and parameters."""
     from src.application.ai.tools import (
+        CreateExperimentTool,
+        CreateNotebookTool,
+        EditPaperTool,
         GetBlockContentTool,
         GetExperimentTool,
         GetNotebookTool,
@@ -114,6 +161,9 @@ async def test_all_tool_definitions_have_required_fields():
     )
 
     for tool_cls in [
+        CreateExperimentTool,
+        CreateNotebookTool,
+        EditPaperTool,
         GetBlockContentTool,
         GetExperimentTool,
         GetNotebookTool,

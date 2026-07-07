@@ -526,3 +526,118 @@ async def add_reference(
         "id": str(ref_id),
         "citation_id": str(citation_id),
     }
+
+
+# ─── LaTeX Compilation ──────────────────────────────────────────────────
+
+
+@router.post("/{paper_id}/compile")
+async def compile_paper(
+    paper_id: UUID,
+    user: TokenData = Depends(get_current_user),
+    organization_id: UUID = Depends(get_current_org_with_membership),
+):
+    """Compile LaTeX source to PDF preview.
+
+    Requires 'pdflatex' to be installed in the container.
+    If not available, returns instructions for setup.
+    """
+    paper = await db.fetch_one(
+        """
+        SELECT id, title, latex_content
+        FROM papers
+        WHERE id = $1 AND organization_id = $2 AND deleted_at IS NULL
+        """,
+        paper_id,
+        organization_id,
+    )
+    if not paper:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Paper not found",
+        )
+
+    latex = paper["latex_content"]
+    if not latex:
+        return {
+            "status": "error",
+            "message": (
+                "Paper has no LaTeX content. "
+                "Write LaTeX source in the editor first."
+            ),
+        }
+
+    # Check if pdflatex is available
+    import subprocess
+    import tempfile
+    import os
+
+    try:
+        subprocess.run(
+            ["which", "pdflatex"],
+            capture_output=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return {
+            "status": "unavailable",
+            "message": (
+                "LaTeX compiler (pdflatex) is not installed in this "
+                "environment. To enable PDF compilation, install TeX Live: "
+                "apt-get install texlive texlive-latex-extra"
+            ),
+            "latex_content": latex,
+        }
+
+    # Compile LaTeX to PDF
+    try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tex_path = os.path.join(tmpdir, "paper.tex")
+            with open(tex_path, "w") as f:
+                f.write(latex)
+
+            result = subprocess.run(
+                ["pdflatex", "-interaction=nonstopmode",
+                 "-output-directory", tmpdir, tex_path],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+
+            pdf_path = os.path.join(tmpdir, "paper.pdf")
+            if os.path.exists(pdf_path):
+                with open(pdf_path, "rb") as f:
+                    pdf_content = f.read()
+
+                # Store the compiled PDF as a temporary artifact
+                # For now, return base64-encoded PDF
+                import base64
+                pdf_b64 = base64.b64encode(pdf_content).decode()
+
+                return {
+                    "status": "success",
+                    "message": "PDF compiled successfully.",
+                    "pdf_base64": pdf_b64,
+                    "pdf_size_bytes": len(pdf_content),
+                    "log": result.stdout[-2000:] if result.stdout else "",
+                }
+            else:
+                errors = result.stdout[-3000:] if result.stdout else ""
+                if result.stderr:
+                    errors += "\n" + result.stderr[-2000:]
+                return {
+                    "status": "error",
+                    "message": "LaTeX compilation failed.",
+                    "errors": errors[:3000],
+                    "log": result.stdout[-3000:] if result.stdout else "",
+                }
+    except subprocess.TimeoutExpired:
+        return {
+            "status": "error",
+            "message": "LaTeX compilation timed out after 60 seconds.",
+        }
+    except Exception as exc:
+        return {
+            "status": "error",
+            "message": f"Compilation error: {exc}",
+        }
