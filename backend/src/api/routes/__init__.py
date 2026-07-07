@@ -8,6 +8,7 @@ from . import (
     metrics,
     notebooks,
     search,
+    settings,
 )
 
 __all__ = [
@@ -19,4 +20,5 @@ __all__ = [
     "metrics",
     "notebooks",
     "search",
+    "settings",
 ]

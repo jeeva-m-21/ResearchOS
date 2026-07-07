@@ -26,6 +26,7 @@ from .routes import (
     notebooks,
     projects,
     search,
+    settings,
 )
 
 logger = logging.getLogger(__name__)
@@ -132,6 +133,7 @@ app.include_router(metrics.router, prefix="/v1", tags=["Metrics"])
 app.include_router(projects.router, prefix="/v1/projects", tags=["Projects"])
 app.include_router(events.router, prefix="/v1", tags=["Events"])
 app.include_router(ask.router, tags=["AI Chat"])
+app.include_router(settings.router)
 
 # Prometheus metrics
 metrics_app = make_asgi_app()

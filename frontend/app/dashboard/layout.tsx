@@ -35,6 +35,7 @@ import {
   Beaker,
   NotebookIcon,
   Command,
+  Settings,
 } from 'lucide-react'
 
 const navItems = [
@@ -44,6 +45,7 @@ const navItems = [
   { href: '/dashboard/notebooks', label: 'Notebooks', icon: BookOpen },
   { href: '/dashboard/papers', label: 'Papers', icon: FileText },
   { href: '/dashboard/search', label: 'Search', icon: Search },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
 function NavLinks({ className, onNavClick }: { className?: string; onNavClick?: () => void }) {
