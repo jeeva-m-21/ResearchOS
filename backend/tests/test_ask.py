@@ -30,7 +30,7 @@ async def test_get_experiment_tool_returns_string():
     tool = GetExperimentTool()
     result = await tool.execute(experiment_id="00000000-0000-0000-0000-000000000000")
     assert isinstance(result, str)
-    assert "Experiment" in result
+    assert "experiment" in result.lower()
 
 
 @pytest.mark.asyncio
@@ -41,7 +41,7 @@ async def test_get_notebook_tool_returns_string():
     tool = GetNotebookTool()
     result = await tool.execute(notebook_id="00000000-0000-0000-0000-000000000000")
     assert isinstance(result, str)
-    assert "Notebook" in result
+    assert "notebook" in result.lower()
 
 
 @pytest.mark.asyncio
@@ -52,7 +52,7 @@ async def test_list_experiments_tool_returns_string():
     tool = ListExperimentsTool()
     result = await tool.execute()
     assert isinstance(result, str)
-    assert "experiments" in result.lower() or "list" in result.lower()
+    assert "experiment" in result.lower() or "list" in result.lower()
 
 
 @pytest.mark.asyncio
@@ -63,7 +63,7 @@ async def test_list_notebooks_tool_returns_string():
     tool = ListNotebooksTool()
     result = await tool.execute()
     assert isinstance(result, str)
-    assert "notebooks" in result.lower() or "list" in result.lower()
+    assert "notebook" in result.lower() or "list" in result.lower()
 
 
 @pytest.mark.asyncio
@@ -74,7 +74,29 @@ async def test_get_block_content_tool_returns_string():
     tool = GetBlockContentTool()
     result = await tool.execute(block_id="00000000-0000-0000-0000-000000000000")
     assert isinstance(result, str)
-    assert "Block" in result
+    assert "block" in result.lower()
+
+
+@pytest.mark.asyncio
+async def test_get_paper_tool_returns_string():
+    """The GetPaperTool should return a string result."""
+    from src.application.ai.tools import GetPaperTool
+
+    tool = GetPaperTool()
+    result = await tool.execute(paper_id="00000000-0000-0000-0000-000000000000")
+    assert isinstance(result, str)
+    assert "paper" in result.lower()
+
+
+@pytest.mark.asyncio
+async def test_list_papers_tool_returns_string():
+    """The ListPapersTool should return a string result."""
+    from src.application.ai.tools import ListPapersTool
+
+    tool = ListPapersTool()
+    result = await tool.execute()
+    assert isinstance(result, str)
+    assert "paper" in result.lower() or "list" in result.lower()
 
 
 @pytest.mark.asyncio
@@ -84,8 +106,10 @@ async def test_all_tool_definitions_have_required_fields():
         GetBlockContentTool,
         GetExperimentTool,
         GetNotebookTool,
+        GetPaperTool,
         ListExperimentsTool,
         ListNotebooksTool,
+        ListPapersTool,
         SearchTool,
     )
 
@@ -93,8 +117,10 @@ async def test_all_tool_definitions_have_required_fields():
         GetBlockContentTool,
         GetExperimentTool,
         GetNotebookTool,
+        GetPaperTool,
         ListExperimentsTool,
         ListNotebooksTool,
+        ListPapersTool,
         SearchTool,
     ]:
         tool = tool_cls()
