@@ -205,10 +205,63 @@ class GetNotebookTool(ResearchTool):
         }
 
     async def execute(self, notebook_id: str, **kwargs) -> str:
-        return (
-            f"[Notebook {notebook_id}] "
-            "Details would be fetched here when DB is available."
-        )
+        org_id = kwargs.get("organization_id")
+        try:
+            from src.infrastructure.database import db
+
+            notebook = await db.fetch_one(
+                """
+                SELECT id, title, description, branch, created_at
+                FROM notebooks
+                WHERE id = $1::uuid AND organization_id = $2::uuid
+                  AND deleted_at IS NULL
+                """,
+                notebook_id,
+                org_id,
+            )
+            if not notebook:
+                return f"Notebook {notebook_id} not found."
+
+            blocks = await db.fetch_all(
+                """
+                SELECT b.id, b.block_type, b.position, b.current_version,
+                       bc.content, bc.language
+                FROM blocks b
+                LEFT JOIN block_contents bc
+                  ON bc.block_id = b.id AND bc.version = b.current_version
+                WHERE b.notebook_id = $1::uuid
+                  AND b.organization_id = $2::uuid
+                  AND b.deleted_at IS NULL
+                ORDER BY b.position ASC
+                """,
+                notebook_id,
+                org_id,
+            )
+
+            created_str = (
+                notebook["created_at"].strftime("%Y-%m-%d")
+                if notebook["created_at"]
+                else "N/A"
+            )
+            lines = [
+                f"**Notebook: {notebook['title']}**",
+                f"- Branch: {notebook['branch']}",
+                f"- Description: {notebook['description'] or 'N/A'}",
+                f"- Created: {created_str}",
+                "",
+                f"**Blocks ({len(blocks)}):**",
+            ]
+            for blk in blocks:
+                preview = (blk["content"] or "")[:80].replace("\n", " ")
+                lang = f" ({blk['language']})" if blk["language"] else ""
+                lines.append(
+                    f"- [{blk['block_type']}{lang}] pos {blk['position']}: "
+                    f"{preview}"
+                )
+
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"Error fetching notebook: {exc}"
 
 
 class ListExperimentsTool(ResearchTool):
@@ -320,11 +373,57 @@ class ListNotebooksTool(ResearchTool):
         }
 
     async def execute(self, **kwargs) -> str:
+        org_id = kwargs.get("organization_id")
+        project_id = kwargs.get("project_id")
         limit = kwargs.get("limit", 20)
-        return (
-            f"[List notebooks (limit={limit})] "
-            "Would return notebook list here when DB is available."
-        )
+        try:
+            from src.infrastructure.database import db
+
+            if project_id:
+                rows = await db.fetch_all(
+                    """
+                    SELECT id, title, branch, created_at
+                    FROM notebooks
+                    WHERE organization_id = $1::uuid
+                      AND project_id = $2::uuid
+                      AND deleted_at IS NULL
+                    ORDER BY created_at DESC
+                    LIMIT $3
+                    """,
+                    org_id,
+                    project_id,
+                    limit,
+                )
+            else:
+                rows = await db.fetch_all(
+                    """
+                    SELECT id, title, branch, created_at
+                    FROM notebooks
+                    WHERE organization_id = $1::uuid
+                      AND deleted_at IS NULL
+                    ORDER BY created_at DESC
+                    LIMIT $2
+                    """,
+                    org_id,
+                    limit,
+                )
+
+            if not rows:
+                return "No notebooks found."
+
+            lines = [f"**Notebooks ({len(rows)}):**\n"]
+            for r in rows:
+                created = (
+                    r["created_at"].strftime("%Y-%m-%d")
+                    if r["created_at"]
+                    else "N/A"
+                )
+                lines.append(
+                    f"- {r['title']} (branch: {r['branch']}, created: {created})"
+                )
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"Error listing notebooks: {exc}"
 
 
 class GetBlockContentTool(ResearchTool):
@@ -354,7 +453,35 @@ class GetBlockContentTool(ResearchTool):
         }
 
     async def execute(self, block_id: str, **kwargs) -> str:
-        return (
-            f"[Block {block_id}] "
-            "Content would be fetched here when DB is available."
-        )
+        org_id = kwargs.get("organization_id")
+        try:
+            from src.infrastructure.database import db
+
+            block = await db.fetch_one(
+                """
+                SELECT b.id, b.block_type, b.position, b.current_version,
+                       b.notebook_id, bc.content, bc.language, bc.version
+                FROM blocks b
+                LEFT JOIN block_contents bc
+                  ON bc.block_id = b.id AND bc.version = b.current_version
+                WHERE b.id = $1::uuid AND b.organization_id = $2::uuid
+                  AND b.deleted_at IS NULL
+                """,
+                block_id,
+                org_id,
+            )
+            if not block:
+                return f"Block {block_id} not found."
+
+            content = block["content"] or "(empty)"
+            lang = f" ({block['language']})" if block["language"] else ""
+            return (
+                f"**Block {block_id}**\n"
+                f"- Type: {block['block_type']}{lang}\n"
+                f"- Position: {block['position']}\n"
+                f"- Version: {block['version']}\n"
+                f"- Notebook: {block['notebook_id']}\n"
+                f"\n```\n{content}\n```"
+            )
+        except Exception as exc:
+            return f"Error fetching block content: {exc}"
