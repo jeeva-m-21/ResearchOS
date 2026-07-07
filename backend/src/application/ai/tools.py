@@ -62,20 +62,24 @@ class SearchTool(ResearchTool):
         }
 
     async def execute(self, query: str, **kwargs) -> str:
-        _ = kwargs.get("types")  # kept for future use
+        types = kwargs.get("types")
         limit = kwargs.get("limit", 10)
+        org_id = kwargs.get("organization_id")
         try:
             from src.application.search.service import SearchService
             from src.infrastructure.adapters.embeddings.local import (
                 LocalEmbeddingAdapter,
             )
+            from src.infrastructure.database import db
+
             search = SearchService(
-                db=None,
+                db=db,
                 embedding_adapter=LocalEmbeddingAdapter(),
             )
             results = await search.search(
                 query=query,
-                organization_id=kwargs.get("organization_id", "0" * 32),
+                organization_id=org_id,
+                types=types,
                 limit=limit,
             )
             if not results.results:
