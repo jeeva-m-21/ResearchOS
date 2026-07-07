@@ -167,7 +167,7 @@ class AIOrchestrator:
             "always include their IDs\n"
             "- If you need more information, use the tools available to you\n"
             "- You can search across all research objects, read experiments "
-            "with their metrics, and inspect notebook blocks\n"
+            "with their metrics, inspect notebook blocks, and query papers\n"
             "- Present data in a structured, readable format\n"
             "- When discussing metrics, show relevant numbers and trends\n"
             "- If a tool returns nothing, suggest alternative searches\n"

@@ -14,8 +14,10 @@ from src.application.ai import (
     GetBlockContentTool,
     GetExperimentTool,
     GetNotebookTool,
+    GetPaperTool,
     ListExperimentsTool,
     ListNotebooksTool,
+    ListPapersTool,
     ModelInfo,
     SearchTool,
 )
@@ -72,6 +74,8 @@ def _create_orchestrator() -> AIOrchestrator:
         ListExperimentsTool(),
         ListNotebooksTool(),
         GetBlockContentTool(),
+        GetPaperTool(),
+        ListPapersTool(),
     ]
 
     return AIOrchestrator(llm_provider=primary_provider, tools=tools)

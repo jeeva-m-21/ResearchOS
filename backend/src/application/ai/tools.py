@@ -485,3 +485,193 @@ class GetBlockContentTool(ResearchTool):
             )
         except Exception as exc:
             return f"Error fetching block content: {exc}"
+
+
+class GetPaperTool(ResearchTool):
+    """Get paper details with citations."""
+
+    @property
+    def name(self) -> str:
+        return "get_paper"
+
+    @property
+    def description(self) -> str:
+        return (
+            "Get detailed information about a research paper "
+            "including its citations."
+        )
+
+    @property
+    def parameters(self) -> dict:
+        return {
+            "type": "object",
+            "properties": {
+                "paper_id": {
+                    "type": "string",
+                    "description": "The paper UUID",
+                }
+            },
+            "required": ["paper_id"],
+        }
+
+    async def execute(self, paper_id: str, **kwargs) -> str:
+        org_id = kwargs.get("organization_id")
+        try:
+            from src.infrastructure.database import db
+
+            paper = await db.fetch_one(
+                """
+                SELECT id, title, abstract, status, version,
+                       authors, doi, arxiv_id, created_at
+                FROM papers
+                WHERE id = $1::uuid AND organization_id = $2::uuid
+                  AND deleted_at IS NULL
+                """,
+                paper_id,
+                org_id,
+            )
+            if not paper:
+                return f"Paper {paper_id} not found."
+
+            citations = await db.fetch_all(
+                """
+                SELECT id, citation_key, title, authors, year, venue, url
+                FROM citations
+                WHERE paper_id = $1::uuid AND organization_id = $2::uuid
+                ORDER BY citation_key ASC
+                """,
+                paper_id,
+                org_id,
+            )
+
+            authors_list = paper["authors"] or []
+            authors_str = (
+                ", ".join(str(a) for a in authors_list)
+                if authors_list
+                else "N/A"
+            )
+            created_str = (
+                paper["created_at"].strftime("%Y-%m-%d")
+                if paper["created_at"]
+                else "N/A"
+            )
+            lines = [
+                f"**Paper: {paper['title']}**",
+                f"- Status: {paper['status']} v{paper['version']}",
+                f"- Authors: {authors_str}",
+                f"- DOI: {paper['doi'] or 'N/A'}",
+                f"- arXiv: {paper['arxiv_id'] or 'N/A'}",
+                f"- Created: {created_str}",
+            ]
+            if paper["abstract"]:
+                lines.append(f"\n**Abstract:**\n{paper['abstract']}")
+
+            lines.append(f"\n**Citations ({len(citations)}):**")
+            for c in citations:
+                cauthors = c["authors"] or []
+                cauthors_str = ", ".join(str(a) for a in cauthors[:3])
+                if len(cauthors) > 3:
+                    cauthors_str += " et al."
+                lines.append(
+                    f"- {c['citation_key']}: {cauthors_str} ({c['year']}) "
+                    f"'{c['title']}'"
+                )
+
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"Error fetching paper: {exc}"
+
+
+class ListPapersTool(ResearchTool):
+    """List papers in a project."""
+
+    @property
+    def name(self) -> str:
+        return "list_papers"
+
+    @property
+    def description(self) -> str:
+        return "List research papers in the current project."
+
+    @property
+    def parameters(self) -> dict:
+        return {
+            "type": "object",
+            "properties": {
+                "project_id": {
+                    "type": "string",
+                    "description": "Optional project UUID to filter by",
+                },
+                "status": {
+                    "type": "string",
+                    "description": (
+                        "Filter by status (draft, in_review, published, archived)"
+                    ),
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Max results",
+                    "default": 20,
+                },
+            },
+        }
+
+    async def execute(self, **kwargs) -> str:
+        org_id = kwargs.get("organization_id")
+        project_id = kwargs.get("project_id")
+        status_filter = kwargs.get("status")
+        limit = kwargs.get("limit", 20)
+        try:
+            from src.infrastructure.database import db
+
+            params = [org_id]
+            conditions = [
+                "organization_id = $1::uuid",
+                "deleted_at IS NULL",
+            ]
+            idx = 2
+
+            if project_id:
+                conditions.append(f"project_id = ${idx}::uuid")
+                params.append(project_id)
+                idx += 1
+
+            if status_filter:
+                conditions.append(f"status = ${idx}")
+                params.append(status_filter)
+                idx += 1
+
+            params.append(limit)
+
+            rows = await db.fetch_all(
+                f"""
+                SELECT id, title, status, version, authors, created_at
+                FROM papers
+                WHERE {' AND '.join(conditions)}
+                ORDER BY created_at DESC
+                LIMIT ${idx}
+                """,
+                *params,
+            )
+
+            if not rows:
+                return "No papers found."
+
+            lines = [f"**Papers ({len(rows)}):**\n"]
+            for r in rows:
+                created = (
+                    r["created_at"].strftime("%Y-%m-%d")
+                    if r["created_at"]
+                    else "N/A"
+                )
+                a = r["authors"] or []
+                author_str = ", ".join(str(x) for x in a[:2])
+                if len(a) > 2:
+                    author_str += " et al."
+                lines.append(
+                    f"- {r['title']} [{r['status']} v{r['version']}] "
+                    f"({author_str}, {created})"
+                )
+            return "\n".join(lines)
+        except Exception as exc:
+            return f"Error listing papers: {exc}"
