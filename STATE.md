@@ -1,20 +1,32 @@
 # STATE.md
 
-## Current Sprint: T-031 — Wire AI Tools to Database ✅
+## Current Sprint: T-032 — LaTeX Papers + AI Creation Tools
 
-**Goal**: All 6 AI assistant tools currently return placeholder strings. Wire them to actually query the database so the AI chat can answer questions about papers, experiments, notebooks, and research objects. Also add paper-specific tools for the new Papers feature.
+**Goal**: Enable LaTeX format for papers with a dedicated editor and compile-to-PDF preview. Give the AI assistant tools to create experiments, notebooks, and edit papers directly.
+
+### Priority
+Papers exist as metadata (title, abstract, authors) but lack LaTeX body content. The AI reads but cannot create or edit research objects. This sprint adds:
+- LaTeX content field on papers
+- EditPaper tool for AI
+- CreateExperiment and CreateNotebook tools for AI
+- Frontend paper detail page with LaTeX editor
+- LaTeX compilation endpoint (preview to PDF)
+
+### Plan — 6 steps
+
+1. **Migration + API update**: Add `latex_content TEXT` column to papers table. Update papers CRUD routes to accept/return `latex_content`.
+
+2. **AI — EditPaperTool**: Add tool that lets AI update paper fields (title, abstract, status, latex_content). Register in ask.py.
+
+3. **AI — CreateExperimentTool + CreateNotebookTool**: Add tools that let AI create experiments and notebooks with specified names/projects. Register in ask.py.
+
+4. **Frontend — Papers detail page**: Create `app/dashboard/papers/[id]/page.tsx` with metadata editing, LaTeX source editing (CodeMirror/Monaco-style textarea), citation list.
+
+5. **Frontend — LaTeX compile endpoint**: Create `POST /v1/papers/{id}/compile` that runs `pdflatex` (or external service) and returns PDF URL or compilation errors.
+
+6. **Update tests**: Add tests for new AI tools and compile endpoint.
 
 ### Done
-- ✅ T-031 Step 1 — Wire SearchTool to real database
-- ✅ T-031 Step 2 — Wire Experiment Tools (GetExperiment, ListExperiments)
-- ✅ T-031 Step 3 — Wire Notebook Tools (GetNotebook, ListNotebooks, GetBlockContent)
-- ✅ T-031 Step 4 — Add Paper Tools (GetPaper, ListPapers)
-- ✅ T-031 Step 5 — Update Tests & Verify (18/18 passing)
-- ✅ T-030 — Research Papers Feature (domain, migration, API, frontend)
-- ✅ T-026 — Research AI Chat Assistant (backend + frontend + tests)
-
-### Next priorities (for future sprints)
-- AI chat: persist sessions to database (currently in-memory)
-- AI chat: pass db connection from API route to orchestrator
-- Notebook block execution frontend improvements
-- Search: add autocomplete and graph search
+- T-031 — Wire AI Tools to Database (SearchTool, Experiment, Notebook, Paper tools)
+- T-030 — Research Papers Feature (domain, migration, API, frontend)
+- T-026 — Research AI Chat Assistant (backend + frontend + tests)

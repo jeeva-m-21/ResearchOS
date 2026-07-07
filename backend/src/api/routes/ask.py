@@ -11,6 +11,9 @@ from src.api.dependencies.auth import get_current_org
 from src.application.ai import (
     AIOrchestrator,
     AskRequest,
+    CreateExperimentTool,
+    CreateNotebookTool,
+    EditPaperTool,
     GetBlockContentTool,
     GetExperimentTool,
     GetNotebookTool,
@@ -76,6 +79,9 @@ def _create_orchestrator() -> AIOrchestrator:
         GetBlockContentTool(),
         GetPaperTool(),
         ListPapersTool(),
+        EditPaperTool(),
+        CreateExperimentTool(),
+        CreateNotebookTool(),
     ]
 
     return AIOrchestrator(llm_provider=primary_provider, tools=tools)

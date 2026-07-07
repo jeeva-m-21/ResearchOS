@@ -27,6 +27,7 @@ class Paper(BaseModel):
     doi: Optional[str] = None
     arxiv_id: Optional[str] = None
     tags: list[str] = Field(default_factory=list)
+    latex_content: Optional[str] = None
     node_id: Optional[UUID] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

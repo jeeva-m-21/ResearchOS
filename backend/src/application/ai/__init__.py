@@ -11,6 +11,9 @@ from .dto import (
 )
 from .orchestrator import AIOrchestrator
 from .tools import (
+    CreateExperimentTool,
+    CreateNotebookTool,
+    EditPaperTool,
     GetBlockContentTool,
     GetExperimentTool,
     GetNotebookTool,
@@ -25,7 +28,8 @@ from .tools import (
 __all__ = [
     "AskRequest", "AskResponse", "ChatMessage", "MessageRole",
     "ModelInfo", "SourceInfo", "ToolCall", "ToolDefinition", "ToolResult",
-    "ResearchTool", "SearchTool", "GetExperimentTool", "GetNotebookTool",
+    "ResearchTool", "SearchTool", "CreateExperimentTool", "CreateNotebookTool",
+    "EditPaperTool", "GetExperimentTool", "GetNotebookTool",
     "GetPaperTool", "ListExperimentsTool", "ListNotebooksTool", "ListPapersTool",
     "GetBlockContentTool",
     "AIOrchestrator",

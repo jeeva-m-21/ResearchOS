@@ -1,6 +1,8 @@
 """Research-aware tools for the AI assistant."""
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any
+from uuid import uuid4
 
 
 class ResearchTool(ABC):
@@ -675,3 +677,335 @@ class ListPapersTool(ResearchTool):
             return "\n".join(lines)
         except Exception as exc:
             return f"Error listing papers: {exc}"
+
+
+class EditPaperTool(ResearchTool):
+    """Update a paper's fields."""
+
+    @property
+    def name(self) -> str:
+        return "edit_paper"
+
+    @property
+    def description(self) -> str:
+        return (
+            "Update a research paper's fields including title, abstract, "
+            "status, authors, doi, arxiv_id, tags, and latex_content."
+        )
+
+    @property
+    def parameters(self) -> dict:
+        return {
+            "type": "object",
+            "properties": {
+                "paper_id": {
+                    "type": "string",
+                    "description": "The paper UUID to update",
+                },
+                "title": {
+                    "type": "string",
+                    "description": "New paper title",
+                },
+                "abstract": {
+                    "type": "string",
+                    "description": "New abstract text",
+                },
+                "status": {
+                    "type": "string",
+                    "description": (
+                        "New status: draft, in_review, published, archived"
+                    ),
+                },
+                "authors": {
+                    "type": "string",
+                    "description": "Authors as JSON string e.g. "
+                    '[\"Alice\", \"Bob\"]',
+                },
+                "doi": {
+                    "type": "string",
+                    "description": "Digital Object Identifier",
+                },
+                "arxiv_id": {
+                    "type": "string",
+                    "description": "arXiv paper ID",
+                },
+                "tags": {
+                    "type": "string",
+                    "description": "Tags as JSON string e.g. "
+                    '[\"nlp\", \"transformer\"]',
+                },
+                "latex_content": {
+                    "type": "string",
+                    "description": "LaTeX source content of the paper",
+                },
+            },
+            "required": ["paper_id"],
+        }
+
+    async def execute(self, paper_id: str, **kwargs) -> str:
+        org_id = kwargs.get("organization_id")
+        try:
+            from src.infrastructure.database import db
+
+            # Verify paper exists
+            existing = await db.fetch_one(
+                "SELECT id FROM papers "
+                "WHERE id = $1::uuid AND organization_id = $2::uuid "
+                "AND deleted_at IS NULL",
+                paper_id,
+                org_id,
+            )
+            if not existing:
+                return f"Paper {paper_id} not found."
+
+            sets = []
+            params = [paper_id, org_id]
+            idx = 3
+            changes = {}
+
+            for field in (
+                "title", "abstract", "status", "doi", "arxiv_id",
+                "latex_content",
+            ):
+                val = kwargs.get(field)
+                if val is not None:
+                    sets.append(f"{field} = ${idx}")
+                    params.append(val)
+                    changes[field] = val
+                    idx += 1
+
+            authors_val = kwargs.get("authors")
+            if authors_val is not None:
+                import json
+                parsed = json.loads(authors_val)
+                sets.append(f"authors = ${idx}::jsonb")
+                params.append(json.dumps(parsed))
+                changes["authors"] = parsed
+                idx += 1
+
+            tags_val = kwargs.get("tags")
+            if tags_val is not None:
+                import json
+                parsed = json.loads(tags_val)
+                sets.append(f"tags = ${idx}::jsonb")
+                params.append(json.dumps(parsed))
+                changes["tags"] = parsed
+                idx += 1
+
+            if not sets:
+                return "No fields to update."
+
+            sets.append("version = version + 1")
+            sets.append("updated_at = NOW()")
+
+            await db.execute(
+                (
+                    "UPDATE papers SET " + ", ".join(sets)
+                    + " WHERE id = $1 AND organization_id = $2 "
+                    "AND deleted_at IS NULL"
+                ),
+                *params,
+            )
+
+            # Emit event via inline event insert for simplicity
+            now = datetime.utcnow()
+            await db.execute(
+                """
+                INSERT INTO events (
+                    event_id, organization_id, event_type,
+                    aggregate_id, aggregate_type, version,
+                    payload, created_at
+                ) VALUES ($1, $2, 'paper.edited', $3, 'Paper', 1, $4, $5)
+                ON CONFLICT (event_id) DO NOTHING
+                """,
+                uuid4(),
+                org_id,
+                paper_id,
+                str(changes),
+                now,
+            )
+
+            updated_fields = ", ".join(changes.keys())
+            return (
+                f"Paper {paper_id} updated successfully. "
+                f"Changed: {updated_fields}"
+            )
+        except Exception as exc:
+            return f"Error updating paper: {exc}"
+
+
+class CreateExperimentTool(ResearchTool):
+    """Create a new experiment."""
+
+    @property
+    def name(self) -> str:
+        return "create_experiment"
+
+    @property
+    def description(self) -> str:
+        return (
+            "Create a new experiment in a project. "
+            "Returns the experiment ID and initial details."
+        )
+
+    @property
+    def parameters(self) -> dict:
+        return {
+            "type": "object",
+            "properties": {
+                "project_id": {
+                    "type": "string",
+                    "description": "The project UUID to create the experiment in",
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name for the experiment",
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of the experiment",
+                },
+                "tags": {
+                    "type": "string",
+                    "description": "Tags as JSON string e.g. "
+                    '["vision", "classification"]',
+                },
+            },
+            "required": ["project_id", "name"],
+        }
+
+    async def execute(self, project_id: str, name: str, **kwargs) -> str:
+        org_id = kwargs.get("organization_id")
+        description = kwargs.get("description")
+        tags_str = kwargs.get("tags")
+        try:
+            from src.infrastructure.database import db
+
+            # Verify project exists
+            project = await db.fetch_one(
+                "SELECT id FROM projects "
+                "WHERE id = $1::uuid AND organization_id = $2::uuid "
+                "AND deleted_at IS NULL",
+                project_id,
+                org_id,
+            )
+            if not project:
+                return f"Project {project_id} not found."
+
+            import json
+            parsed_tags = json.loads(tags_str) if tags_str else []
+            exp_id = uuid4()
+            now = datetime.utcnow()
+
+            await db.execute(
+                """
+                INSERT INTO experiments (
+                    id, organization_id, project_id, name, description,
+                    status, tags, created_by, created_at, updated_at
+                ) VALUES ($1, $2, $3, $4, $5, 'created', $6::jsonb,
+                          $7, $8, $9)
+                """,
+                exp_id,
+                org_id,
+                project_id,
+                name,
+                description,
+                json.dumps(parsed_tags),
+                "00000000-0000-0000-0000-000000000000",  # system user
+                now,
+                now,
+            )
+
+            return (
+                f"Experiment '{name}' created successfully!\n"
+                f"- ID: {exp_id}\n"
+                f"- Status: created\n"
+                f"- Project: {project_id}\n"
+                f"Tip: Use get_experiment to view experiment details."
+            )
+        except Exception as exc:
+            return f"Error creating experiment: {exc}"
+
+
+class CreateNotebookTool(ResearchTool):
+    """Create a new notebook."""
+
+    @property
+    def name(self) -> str:
+        return "create_notebook"
+
+    @property
+    def description(self) -> str:
+        return (
+            "Create a new notebook in a project. "
+            "Returns the notebook ID and initial details."
+        )
+
+    @property
+    def parameters(self) -> dict:
+        return {
+            "type": "object",
+            "properties": {
+                "project_id": {
+                    "type": "string",
+                    "description": "The project UUID to create the notebook in",
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Title for the notebook",
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of the notebook",
+                },
+            },
+            "required": ["project_id", "title"],
+        }
+
+    async def execute(self, project_id: str, title: str, **kwargs) -> str:
+        org_id = kwargs.get("organization_id")
+        description = kwargs.get("description")
+        try:
+            from src.infrastructure.database import db
+
+            # Verify project exists
+            project = await db.fetch_one(
+                "SELECT id FROM projects "
+                "WHERE id = $1::uuid AND organization_id = $2::uuid "
+                "AND deleted_at IS NULL",
+                project_id,
+                org_id,
+            )
+            if not project:
+                return f"Project {project_id} not found."
+
+            nb_id = uuid4()
+            now = datetime.utcnow()
+
+            await db.execute(
+                """
+                INSERT INTO notebooks (
+                    id, organization_id, project_id, title, description,
+                    branch, created_by, created_at, updated_at
+                ) VALUES ($1, $2, $3, $4, $5, 'main',
+                          $6, $7, $8)
+                """,
+                nb_id,
+                org_id,
+                project_id,
+                title,
+                description,
+                "00000000-0000-0000-0000-000000000000",  # system user
+                now,
+                now,
+            )
+
+            return (
+                f"Notebook '{title}' created successfully!\n"
+                f"- ID: {nb_id}\n"
+                f"- Branch: main\n"
+                f"- Project: {project_id}\n"
+                f"Tip: Use get_notebook to view notebook details."
+            )
+        except Exception as exc:
+            return f"Error creating notebook: {exc}"

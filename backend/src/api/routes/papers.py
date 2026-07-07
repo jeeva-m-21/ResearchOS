@@ -34,6 +34,7 @@ async def create_paper(
     project_id: UUID,
     abstract: Optional[str] = None,
     authors: Optional[str] = None,
+    latex_content: Optional[str] = None,
     user: TokenData = Depends(get_current_user),
     organization_id: UUID = Depends(get_current_org_with_membership),
     event_producer: EventProducer = Depends(get_event_producer),
@@ -64,9 +65,9 @@ async def create_paper(
         """
         INSERT INTO papers (
             id, organization_id, project_id, title, abstract,
-            status, version, authors,
+            status, version, authors, latex_content,
             created_by, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, 'draft', 1, $6::jsonb, $7, $8, $9)
+        ) VALUES ($1, $2, $3, $4, $5, 'draft', 1, $6::jsonb, $7, $8, $9, $10)
         """,
         paper_id,
         organization_id,
@@ -74,6 +75,7 @@ async def create_paper(
         title,
         abstract,
         json.dumps(parsed_authors),
+        latex_content,
         user.user_id,
         now,
         now,
@@ -127,7 +129,8 @@ async def list_papers(
         f"""
         SELECT
             id, project_id, title, abstract, status, version,
-            authors, doi, arxiv_id, tags, created_at, updated_at
+            authors, doi, arxiv_id, tags, latex_content,
+            created_at, updated_at
         FROM papers
         WHERE {' AND '.join(conditions)}
         ORDER BY updated_at DESC
@@ -150,7 +153,7 @@ async def get_paper(
         """
         SELECT
             id, project_id, title, abstract, status, version,
-            authors, doi, arxiv_id, tags,
+            authors, doi, arxiv_id, tags, latex_content,
             created_by, created_at, updated_at
         FROM papers
         WHERE id = $1 AND organization_id = $2 AND deleted_at IS NULL
@@ -195,6 +198,7 @@ async def update_paper(
     doi: Optional[str] = None,
     arxiv_id: Optional[str] = None,
     tags: Optional[str] = None,
+    latex_content: Optional[str] = None,
     user: TokenData = Depends(get_current_user),
     organization_id: UUID = Depends(get_current_org_with_membership),
     event_producer: EventProducer = Depends(get_event_producer),
@@ -273,6 +277,12 @@ async def update_paper(
         changes["tags"] = parsed
         idx += 1
 
+    if latex_content is not None:
+        sets.append(f"latex_content = ${idx}")
+        params.append(latex_content)
+        changes["latex_content"] = latex_content
+        idx += 1
+
     if not sets:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -306,7 +316,8 @@ async def update_paper(
     updated = await db.fetch_one(
         """
         SELECT id, project_id, title, abstract, status, version,
-               authors, doi, arxiv_id, tags, created_at, updated_at
+               authors, doi, arxiv_id, tags, latex_content,
+               created_at, updated_at
         FROM papers WHERE id = $1 AND organization_id = $2
         """,
         paper_id,
