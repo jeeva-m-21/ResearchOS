@@ -1,17 +1,56 @@
 """Paper domain events"""
-from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from src.domain.shared.events import DomainEvent
 
 
-class PaperEdited(BaseModel):
-    """Event: Paper edited"""
-    event_type: str = "paper.edited"
-    event_id: UUID = Field(default_factory=lambda: __import__('uuid').uuid4())
-    aggregate_id: UUID
+class PaperCreated(DomainEvent):
+    """Event: Paper created"""
+    event_type: str = "paper.created"
     aggregate_type: str = "Paper"
     version: int = 1
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
     paper_id: UUID
-    organization_id: UUID
+    project_id: UUID
+    title: str
+    status: str
+
+
+class PaperEdited(DomainEvent):
+    """Event: Paper edited"""
+    event_type: str = "paper.edited"
+    aggregate_type: str = "Paper"
+    version: int = 1
+    paper_id: UUID
+    project_id: UUID
+    changes: dict[str, Any] = Field(default_factory=dict)
+    created_by: UUID
+
+
+class PaperDeleted(DomainEvent):
+    """Event: Paper deleted"""
+    event_type: str = "paper.deleted"
+    aggregate_type: str = "Paper"
+    version: int = 1
+    paper_id: UUID
+
+
+class CitationAdded(DomainEvent):
+    """Event: Citation added to paper"""
+    event_type: str = "citation.added"
+    aggregate_type: str = "Paper"
+    version: int = 1
+    paper_id: UUID
+    citation_id: UUID
+    citation_key: str
+
+
+class CitationRemoved(DomainEvent):
+    """Event: Citation removed from paper"""
+    event_type: str = "citation.removed"
+    aggregate_type: str = "Paper"
+    version: int = 1
+    paper_id: UUID
+    citation_id: UUID

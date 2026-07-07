@@ -24,6 +24,7 @@ from .routes import (
     health,
     metrics,
     notebooks,
+    papers,
     projects,
     search,
     settings,
@@ -130,6 +131,7 @@ app.include_router(experiments.router, prefix="/v1/experiments", tags=["Experime
 app.include_router(notebooks.router, prefix="/v1/notebooks", tags=["Notebooks"])
 app.include_router(search.router, prefix="/v1/search", tags=["Search"])
 app.include_router(metrics.router, prefix="/v1", tags=["Metrics"])
+app.include_router(papers.router, prefix="/v1/papers", tags=["Papers"])
 app.include_router(projects.router, prefix="/v1/projects", tags=["Projects"])
 app.include_router(events.router, prefix="/v1", tags=["Events"])
 app.include_router(ask.router, tags=["AI Chat"])

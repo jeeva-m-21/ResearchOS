@@ -7,6 +7,7 @@ from . import (
     health,
     metrics,
     notebooks,
+    papers,
     search,
     settings,
 )
@@ -19,6 +20,7 @@ __all__ = [
     "health",
     "metrics",
     "notebooks",
+    "papers",
     "search",
     "settings",
 ]
