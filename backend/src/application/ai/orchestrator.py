@@ -1,11 +1,11 @@
 """Orchestrates the AI chat: context, LLM calls, tool execution, streaming."""
 from typing import AsyncIterator, Optional
-from uuid import uuid4
+from uuid import UUID, uuid4
+
+from infrastructure.database import Database
 
 from .dto import (
     AskRequest,
-    ChatMessage,
-    MessageRole,
     ToolDefinition,
 )
 from .tools import ResearchTool
@@ -19,12 +19,11 @@ class AIOrchestrator:
         self,
         llm_provider,
         tools: Optional[list[ResearchTool]] = None,
-        db=None,
+        db: Optional[Database] = None,
     ):
         self._llm = llm_provider
         self._tools = tools or []
         self._db = db
-        self._sessions: dict[str, list[ChatMessage]] = {}
 
     @property
     def tool_definitions(self) -> list[ToolDefinition]:
@@ -36,6 +35,94 @@ class AIOrchestrator:
             )
             for t in self._tools
         ]
+
+    async def _load_session_history(
+        self, session_id: str, organization_id: str
+    ) -> list[dict]:
+        """Load message history from DB for an existing session."""
+        if not self._db or not self._db.pool:
+            return []
+        rows = await self._db.fetch_all(
+            """
+            SELECT role, content
+            FROM ai_messages
+            WHERE session_id = (
+                SELECT id FROM agent_sessions
+                WHERE session_id = $1 AND organization_id = $2
+                AND deleted_at IS NULL
+            )
+            ORDER BY created_at ASC
+            """,
+            session_id,
+            organization_id,
+        )
+        return [{"role": r["role"], "content": r["content"]} for r in rows]
+
+    async def _save_user_message(
+        self, session_id: str, organization_id: str, user_id: str,
+        content: str, model: str,
+    ) -> str:
+        """Persist a user message to the DB. Returns the session row UUID."""
+        if not self._db or not self._db.pool:
+            return session_id
+
+        # Upsert session
+        row = await self._db.fetch_one(
+            """
+            SELECT id FROM agent_sessions
+            WHERE session_id = $1 AND organization_id = $2
+            """,
+            session_id,
+            organization_id,
+        )
+        if row:
+            session_row_id = row["id"]
+            await self._db.execute(
+                "UPDATE agent_sessions SET updated_at = NOW() WHERE id = $1",
+                session_row_id,
+            )
+        else:
+            session_row_id = uuid4()
+            await self._db.execute(
+                """
+                INSERT INTO agent_sessions
+                    (id, organization_id, user_id, session_id, model)
+                VALUES ($1, $2, $3, $4, $5)
+                """,
+                session_row_id,
+                UUID(organization_id),
+                UUID(user_id) if user_id else UUID(organization_id),
+                session_id,
+                model,
+            )
+
+        # Save user message
+        await self._db.execute(
+            """
+            INSERT INTO ai_messages (session_id, organization_id, role, content)
+            VALUES ($1, $2, 'user', $3)
+            """,
+            session_row_id,
+            UUID(organization_id),
+            content,
+        )
+        return str(session_row_id)
+
+    async def _save_assistant_message(
+        self, session_row_id: str, organization_id: str, content: str,
+    ) -> None:
+        """Persist an assistant message to the DB."""
+        if not self._db or not self._db.pool:
+            return
+        await self._db.execute(
+            """
+            INSERT INTO ai_messages (session_id, organization_id, role, content)
+            VALUES ($1, $2, 'assistant', $3)
+            """,
+            UUID(session_row_id),
+            UUID(organization_id),
+            content,
+        )
 
     async def ask(
         self,
@@ -56,13 +143,17 @@ class AIOrchestrator:
         )
         messages = [{"role": "system", "content": system_prompt}]
 
-        # Restore session history
-        for msg in self._sessions.get(session_id, []):
-            messages.append(
-                {"role": msg.role.value, "content": msg.content}
-            )
+        # Restore session history from DB
+        history = await self._load_session_history(session_id, organization_id)
+        messages.extend(history)
 
         messages.append({"role": "user", "content": request.message})
+
+        # Persist user message + get session row ID
+        session_row_id = await self._save_user_message(
+            session_id, organization_id, "",
+            request.message, request.model,
+        )
 
         collected_content = ""
         max_rounds = 5
@@ -120,21 +211,10 @@ class AIOrchestrator:
                     "content": {"name": tc["name"], "result": result},
                 }
 
-        # Persist session
-        self._sessions.setdefault(session_id, [])
-        self._sessions[session_id].append(
-            ChatMessage(
-                role=MessageRole.USER, content=request.message
-            )
+        # Persist assistant response to DB
+        await self._save_assistant_message(
+            session_row_id, organization_id, collected_content,
         )
-        self._sessions[session_id].append(
-            ChatMessage(
-                role=MessageRole.ASSISTANT, content=collected_content
-            )
-        )
-        # Keep last 50 messages
-        if len(self._sessions[session_id]) > 50:
-            self._sessions[session_id] = self._sessions[session_id][-50:]
 
         yield {"type": "done", "content": {"session_id": session_id}}
 

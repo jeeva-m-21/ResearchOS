@@ -4,9 +4,6 @@ import os
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import StreamingResponse
-
 from api.dependencies.auth import get_current_org
 from application.ai import (
     AIOrchestrator,
@@ -24,11 +21,14 @@ from application.ai import (
     ModelInfo,
     SearchTool,
 )
+from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from infrastructure.adapters.llm import (
     AnthropicProvider,
     OllamaProvider,
     OpenAIProvider,
 )
+from infrastructure.database import db as database
 
 router = APIRouter(prefix="/v1/ask", tags=["ask"])
 
@@ -84,7 +84,7 @@ def _create_orchestrator() -> AIOrchestrator:
         CreateNotebookTool(),
     ]
 
-    return AIOrchestrator(llm_provider=primary_provider, tools=tools)
+    return AIOrchestrator(llm_provider=primary_provider, tools=tools, db=database)
 
 
 # --- Dependencies ---
