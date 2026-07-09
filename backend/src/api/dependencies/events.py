@@ -2,9 +2,8 @@
 import os
 from typing import Optional
 
-from redis.asyncio import Redis
-
 from infrastructure.events.producer import EventProducer
+from redis.asyncio import Redis
 
 _producer: Optional[EventProducer] = None
 _redis: Optional[Redis] = None

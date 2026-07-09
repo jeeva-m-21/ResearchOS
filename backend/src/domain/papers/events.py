@@ -2,9 +2,8 @@
 from typing import Any
 from uuid import UUID
 
-from pydantic import Field
-
 from domain.shared.events import DomainEvent
+from pydantic import Field
 
 
 class PaperCreated(DomainEvent):

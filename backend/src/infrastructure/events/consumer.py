@@ -19,7 +19,6 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional
 from uuid import UUID
 
 import redis.asyncio as redis
-
 from domain.shared.events import DomainEvent
 
 from .backoff import ExponentialBackoff

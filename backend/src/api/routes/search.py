@@ -2,9 +2,8 @@
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
-
 from application.search.service import SearchResponse, SearchService
+from fastapi import APIRouter, Depends, Query
 from infrastructure.adapters.embeddings.local import LocalEmbeddingAdapter
 from infrastructure.database import db
 

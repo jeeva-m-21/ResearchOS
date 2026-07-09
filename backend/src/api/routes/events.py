@@ -10,16 +10,15 @@ import os
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from fastapi.responses import StreamingResponse
-from redis.asyncio import Redis
-
 from api.dependencies.auth import get_current_org, get_current_user
 from domain.experiments.events import ExperimentStarted, MetricLogged, RunCompleted
 from domain.shared.events import DomainEvent
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from infrastructure.auth.jwt import TokenData
 from infrastructure.events.producer import EventProducer
 from infrastructure.events.service import EventsService, EventsServiceFactory
+from redis.asyncio import Redis
 
 router = APIRouter()
 

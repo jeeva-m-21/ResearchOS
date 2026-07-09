@@ -2,14 +2,13 @@
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
 from api.dependencies.events import get_event_producer
 from domain.experiments.events import ExperimentStarted, RunStarted
+from fastapi import APIRouter, Depends, HTTPException, status
 from infrastructure.auth.jwt import TokenData
 from infrastructure.database import db
 from infrastructure.events.producer import EventProducer

@@ -13,7 +13,6 @@ if "/app" not in sys.path:
 import asyncio
 
 import asyncpg
-
 from infrastructure.adapters.embeddings.local import LocalEmbeddingAdapter
 
 DATABASE_URL = "postgresql://researchos:researchos@postgres:5432/researchos"

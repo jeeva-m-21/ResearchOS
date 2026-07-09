@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import Any, Dict
 
 import asyncpg
-
 from domain.experiments.events import ExperimentStarted, MetricLogged
 from domain.notebooks.events import NotebookUpdated
 from domain.papers.events import PaperEdited

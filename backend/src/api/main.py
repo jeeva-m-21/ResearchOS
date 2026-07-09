@@ -9,10 +9,9 @@ from uuid import UUID
 import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from prometheus_client import make_asgi_app
-
 from infrastructure.database import db
 from infrastructure.events import EventConsumer, EventStore
+from prometheus_client import make_asgi_app
 
 from .middleware.auth import AuthMiddleware, OrganizationMiddleware
 from .routes import (

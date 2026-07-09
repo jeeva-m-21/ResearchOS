@@ -81,6 +81,23 @@ export async function createBlock(
   return res.data
 }
 
+// ── Block Update ───────────────────────────────────────────────────
+
+export interface UpdateBlockData {
+  content?: string | null
+  language?: string | null
+  position?: number | null
+}
+
+export async function updateBlock(
+  notebookId: string,
+  blockId: string,
+  data: UpdateBlockData,
+): Promise<Block> {
+  const res = await api.put(`/v1/notebooks/${notebookId}/blocks/${blockId}`, data)
+  return res.data
+}
+
 // ── Block Execution ─────────────────────────────────────────────────
 
 export interface Execution {

@@ -4,12 +4,11 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-
 from api.dependencies.auth import get_current_org_with_membership, get_current_user
+from fastapi import APIRouter, Depends, HTTPException
 from infrastructure.auth.jwt import TokenData
 from infrastructure.database import db
+from pydantic import BaseModel
 
 router = APIRouter(tags=["Settings"])
 

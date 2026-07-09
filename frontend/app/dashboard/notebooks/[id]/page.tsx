@@ -23,6 +23,8 @@ import {
   Play,
   Loader2,
   X,
+  Pencil,
+  Save,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -48,6 +50,7 @@ import {
   fetchNotebook,
   fetchBlocks,
   createBlock,
+  updateBlock,
   type Notebook,
   type Block,
 } from '@/lib/api/notebooks'
@@ -133,9 +136,23 @@ function InfoCard({ icon: Icon, label, value }: { icon: React.ElementType; label
 const EXECUTABLE_TYPES = ['python', 'rust', 'sql']
 
 function BlockRow({ block, notebookId }: { block: Block; notebookId: string }) {
+  const queryClient = useQueryClient()
   const typeConfig = BLOCK_TYPE_CONFIG[block.block_type]
   const TypeIcon = typeConfig?.icon || FileText
   const isExecutable = EXECUTABLE_TYPES.includes(block.block_type)
+
+  // Edit state for non-executable blocks
+  const [isEditing, setIsEditing] = useState(false)
+  const [editContent, setEditContent] = useState(block.content || '')
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { content: string }) =>
+      updateBlock(notebookId, block.id, { content: data.content }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blocks', notebookId] })
+      setIsEditing(false)
+    },
+  })
 
   // For executable blocks, render CodeBlock (has its own card styling)
   if (isExecutable) {
@@ -166,8 +183,22 @@ function BlockRow({ block, notebookId }: { block: Block; notebookId: string }) {
     )
   }
 
-  // Non-executable blocks — read-only display
+  // Non-executable blocks — read-only display with inline editing
   const content = block.content || ''
+
+  const handleStartEdit = () => {
+    setEditContent(content)
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setEditContent(content)
+    setIsEditing(false)
+  }
+
+  const handleSave = () => {
+    updateMutation.mutate({ content: editContent })
+  }
 
   return (
     <div className="group rounded-xl bg-card p-4 shadow-sm border border-border hover:shadow-md hover:border-primary/20 transition-all duration-200">
@@ -193,10 +224,59 @@ function BlockRow({ block, notebookId }: { block: Block; notebookId: string }) {
                 {block.language}
               </span>
             )}
+            {!isEditing && (
+              <button
+                onClick={handleStartEdit}
+                className="opacity-0 group-hover:opacity-100 transition-opacity rounded-md p-1 hover:bg-muted text-muted-foreground hover:text-foreground"
+                title="Edit block"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
-          <pre className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 overflow-x-auto mt-2 font-mono leading-relaxed">
-            {content || '(empty)'}
-          </pre>
+
+          {isEditing ? (
+            <div className="space-y-2 mt-2">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={Math.max(4, (editContent.match(/\n/g)?.length || 0) + 2)}
+                className="font-mono text-sm min-h-[100px]"
+                autoFocus
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={updateMutation.isPending || editContent === content}
+                >
+                  {updateMutation.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <Save className="h-3.5 w-3.5 mr-1" />
+                  )}
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  disabled={updateMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                {updateMutation.isError && (
+                  <span className="text-xs text-destructive">
+                    Failed to save: {(updateMutation.error as Error).message}
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <pre className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 overflow-x-auto mt-2 font-mono leading-relaxed">
+              {content || '(empty)'}
+            </pre>
+          )}
         </div>
       </div>
     </div>

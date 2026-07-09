@@ -3,14 +3,13 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
 from api.dependencies.events import get_event_producer
 from domain.experiments.events import MetricLogged
+from fastapi import APIRouter, Depends, HTTPException, status
 from infrastructure.auth.jwt import TokenData
 from infrastructure.database import db
 from infrastructure.events.producer import EventProducer

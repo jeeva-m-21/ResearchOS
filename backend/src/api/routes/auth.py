@@ -3,9 +3,6 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import APIKeyHeader
-
 from api.dependencies.auth import (
     blacklist_token,
     get_current_org_with_membership,
@@ -22,6 +19,8 @@ from api.schemas.auth import (
     TokenResponse,
     UserProfile,
 )
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import APIKeyHeader
 from infrastructure.auth.jwt import TokenData
 from infrastructure.auth.password import PasswordManager
 from infrastructure.database import db

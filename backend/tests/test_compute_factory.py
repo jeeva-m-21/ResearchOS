@@ -2,7 +2,6 @@
 from uuid import UUID, uuid4
 
 import pytest
-
 from application.compute import ComputeFactory, ExecutionRequest, ExecutionResult
 from application.compute.provider import ComputeProvider
 from infrastructure.compute import InAppProvider

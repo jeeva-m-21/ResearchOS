@@ -4,9 +4,6 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
-
 from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
@@ -18,10 +15,12 @@ from application.compute import (
 )
 from domain.notebooks.entities import BlockType
 from domain.notebooks.events import BlockExecuted, NotebookUpdated
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from infrastructure.auth.jwt import TokenData
 from infrastructure.compute import InAppProvider
 from infrastructure.database import db
 from infrastructure.events.producer import EventProducer
+from pydantic import BaseModel
 
 # Singleton compute factory with default providers
 _compute_factory = ComputeFactory()

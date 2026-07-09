@@ -2,13 +2,12 @@
 from typing import Callable, Optional
 from uuid import UUID
 
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-
 from api.dependencies.auth import (
     is_token_blacklisted,
 )
+from fastapi import Request, Response
 from infrastructure.auth.jwt import JWTManager
+from starlette.middleware.base import BaseHTTPMiddleware
 
 jwt_manager = JWTManager()
 
