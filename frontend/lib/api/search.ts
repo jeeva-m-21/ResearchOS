@@ -7,6 +7,14 @@ export interface SearchResult {
   title: string
   description: string | null
   score: number
+  highlights?: string[]
+}
+
+export interface SuggestionResult {
+  id: string
+  title: string
+  node_type: string
+  similarity: number
 }
 
 export interface SearchResponse {
@@ -46,7 +54,7 @@ export async function searchResults(params: SearchParams): Promise<SearchRespons
   return res.data
 }
 
-export async function fetchSuggestions(q: string, limit: number = 5): Promise<string[]> {
+export async function fetchSuggestions(q: string, limit: number = 5): Promise<SuggestionResult[]> {
   if (!q.trim()) return []
 
   const orgId = getOrgId()

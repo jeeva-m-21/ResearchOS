@@ -25,6 +25,7 @@ import {
   NODE_TYPES,
   type SearchResult,
   type SearchResponse,
+  type SuggestionResult,
 } from '@/lib/api/search'
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -141,7 +142,7 @@ export default function SearchPage() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [offset, setOffset] = useState(0)
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<SuggestionResult[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const debouncedQuery = useDebounce(query, 300)
@@ -259,20 +260,26 @@ export default function SearchPage() {
         {/* Suggestions dropdown */}
         {showSuggestions && suggestions.length > 0 && (
           <div className="absolute z-50 mt-1 w-full rounded-xl bg-card border border-border shadow-lg p-1">
-            {suggestions.map((suggestion) => (
-              <button
-                key={suggestion}
-                onClick={() => {
-                  setQuery(suggestion)
-                  setShowSuggestions(false)
-                  setOffset(0)
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors text-left"
-              >
-                <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                {suggestion}
-              </button>
-            ))}
+            {suggestions.map((suggestion) => {
+              const Icon = getNodeIcon(suggestion.node_type)
+              return (
+                <button
+                  key={suggestion.id}
+                  onClick={() => {
+                    setQuery(suggestion.title)
+                    setShowSuggestions(false)
+                    setOffset(0)
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors text-left"
+                >
+                  <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="flex-1 truncate">{suggestion.title}</span>
+                  <span className="text-[10px] uppercase text-muted-foreground bg-muted rounded px-1.5 py-0.5 shrink-0">
+                    {suggestion.node_type}
+                  </span>
+                </button>
+              )
+            })}
           </div>
         )}
       </div>

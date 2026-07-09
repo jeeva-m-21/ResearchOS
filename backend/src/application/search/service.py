@@ -17,6 +17,7 @@ class SearchResult:
     title: str
     description: Optional[str]
     score: float
+    highlights: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -71,7 +72,7 @@ class SearchService:
         total = len(fused)
 
         # Hydrate with full data
-        results = await self._hydrate(paginated, organization_id)
+        results = await self._hydrate(paginated, organization_id, query)
 
         elapsed = int((time.monotonic() - start) * 1000)
 
@@ -168,22 +169,43 @@ class SearchService:
         self,
         node_ids: list[UUID],
         organization_id: UUID,
+        query: str = "",
     ) -> list[SearchResult]:
-        """Fetch full row data for a list of node IDs."""
+        """Fetch full row data for a list of node IDs, with optional highlighting."""
         if not node_ids:
             return []
 
-        rows = await self.db.fetch_all(
-            """
-            SELECT id, node_type::text, title, description
-            FROM nodes
-            WHERE id = ANY($1::uuid[])
-              AND organization_id = $2
-              AND deleted_at IS NULL
-            """,
-            node_ids,
-            organization_id,
-        )
+        if query:
+            rows = await self.db.fetch_all(
+                """
+                SELECT
+                  id, node_type::text, title, description,
+                  ts_headline('english', title,
+                    plainto_tsquery('english', $3)) AS title_hl,
+                  ts_headline('english', description,
+                    plainto_tsquery('english', $3)) AS desc_hl
+                FROM nodes
+                WHERE id = ANY($1::uuid[])
+                  AND organization_id = $2
+                  AND deleted_at IS NULL
+                """,
+                node_ids,
+                organization_id,
+                query,
+            )
+        else:
+            rows = await self.db.fetch_all(
+                """
+                SELECT id, node_type::text, title, description,
+                       NULL AS title_hl, NULL AS desc_hl
+                FROM nodes
+                WHERE id = ANY($1::uuid[])
+                  AND organization_id = $2
+                  AND deleted_at IS NULL
+                """,
+                node_ids,
+                organization_id,
+            )
 
         # Build lookup
         lookup = {r["id"]: r for r in rows}
@@ -192,6 +214,7 @@ class SearchService:
         for node_id in node_ids:
             row = lookup.get(node_id)
             if row:
+                highlights = [h for h in [row.get("title_hl"), row.get("desc_hl")] if h]
                 results.append(
                     SearchResult(
                         id=row["id"],
@@ -199,6 +222,7 @@ class SearchService:
                         title=row["title"],
                         description=row["description"],
                         score=0.0,  # Score is from RRF, set by caller
+                        highlights=highlights,
                     )
                 )
         return results

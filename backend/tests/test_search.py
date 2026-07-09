@@ -187,7 +187,7 @@ async def test_search_empty_query_rejected():
 
 @pytest.mark.asyncio
 async def test_suggestions():
-    """Suggestions should return matching titles based on trigram similarity."""
+    """Suggestions should return structured data based on trigram similarity."""
     async with httpx.AsyncClient() as client:
         login_resp = await client.post(
             f"{BASE_URL}/auth/login",
@@ -212,10 +212,61 @@ async def test_suggestions():
             f"Suggestions failed: {resp.status_code} - {resp.text}"
         )
 
-        titles = resp.json()
-        assert isinstance(titles, list), f"Expected list, got {type(titles)}"
-        assert len(titles) > 0, "Expected at least one suggestion"
+        data = resp.json()
+        assert isinstance(data, list), f"Expected list, got {type(data)}"
+        assert len(data) > 0, "Expected at least one suggestion"
+        # Each item should have structured fields
+        item = data[0]
+        assert "id" in item, f"Missing 'id' in suggestion: {item}"
+        assert "title" in item, f"Missing 'title' in suggestion: {item}"
+        assert "node_type" in item, f"Missing 'node_type' in suggestion: {item}"
+        assert "similarity" in item, (
+            f"Missing 'similarity' in suggestion: {item}"
+        )
         # Should include "transformer"
+        titles = [s["title"] for s in data]
         assert "transformer" in titles, (
             f"Expected 'transformer' in suggestions, got {titles}"
         )
+
+
+@pytest.mark.asyncio
+async def test_search_highlights():
+    """Search should return highlights with matching terms."""
+    async with httpx.AsyncClient() as client:
+        login_resp = await client.post(
+            f"{BASE_URL}/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+                "organization_id": TEST_ORG_ID,
+            },
+        )
+        assert login_resp.status_code == 200
+        token = login_resp.json()["access_token"]
+
+        search_resp = await client.get(
+            f"{BASE_URL}/v1/search/",
+            params={
+                "q": "transformer",
+                "organization_id": TEST_ORG_ID,
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert search_resp.status_code == 200, (
+            f"Search failed: {search_resp.status_code} - {search_resp.text}"
+        )
+
+        data = search_resp.json()
+        assert "results" in data
+        assert len(data["results"]) > 0
+        first = data["results"][0]
+        assert "highlights" in first, (
+            f"Missing 'highlights' in result: {first}"
+        )
+        if first["highlights"]:
+            # At least one highlight should reference the query term
+            all_text = " ".join(first["highlights"]).lower()
+            assert "transformer" in all_text, (
+                f"Expected 'transformer' in highlights, got: {first['highlights']}"
+            )

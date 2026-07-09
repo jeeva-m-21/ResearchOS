@@ -1,5 +1,5 @@
 """Search endpoints — hybrid vector + BM25 search."""
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from application.search.service import SearchResponse, SearchService
@@ -49,11 +49,14 @@ async def suggestions(
     organization_id: UUID = Query(
         ..., description="Organization ID for tenant isolation"
     ),
-) -> list[str]:
-    """Autocomplete suggestions using trigram similarity."""
+) -> list[dict[str, Any]]:
+    """Autocomplete suggestions using trigram similarity.
+
+    Returns structured data with id, title, node_type, and similarity score.
+    """
     rows = await db.fetch_all(
         """
-        SELECT title, similarity(title, $2) AS sim
+        SELECT id, title, node_type::text, similarity(title, $2) AS sim
         FROM nodes
         WHERE organization_id = $1
           AND deleted_at IS NULL
@@ -65,4 +68,12 @@ async def suggestions(
         q,
         limit,
     )
-    return [r["title"] for r in rows]
+    return [
+        {
+            "id": str(r["id"]),
+            "title": r["title"],
+            "node_type": r["node_type"],
+            "similarity": round(float(r["sim"]), 4),
+        }
+        for r in rows
+    ]
