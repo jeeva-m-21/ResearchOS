@@ -7,21 +7,21 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
-from src.api.dependencies.auth import (
+from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
-from src.api.dependencies.events import get_event_producer
-from src.application.compute import (
+from api.dependencies.events import get_event_producer
+from application.compute import (
     ComputeFactory,
     ExecutionRequest,
 )
-from src.domain.notebooks.entities import BlockType
-from src.domain.notebooks.events import BlockExecuted, NotebookUpdated
-from src.infrastructure.auth.jwt import TokenData
-from src.infrastructure.compute import InAppProvider
-from src.infrastructure.database import db
-from src.infrastructure.events.producer import EventProducer
+from domain.notebooks.entities import BlockType
+from domain.notebooks.events import BlockExecuted, NotebookUpdated
+from infrastructure.auth.jwt import TokenData
+from infrastructure.compute import InAppProvider
+from infrastructure.database import db
+from infrastructure.events.producer import EventProducer
 
 # Singleton compute factory with default providers
 _compute_factory = ComputeFactory()

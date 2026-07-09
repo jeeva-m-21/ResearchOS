@@ -20,7 +20,7 @@ from uuid import UUID
 
 import redis.asyncio as redis
 
-from src.domain.shared.events import DomainEvent
+from domain.shared.events import DomainEvent
 
 from .backoff import ExponentialBackoff
 from .dlq import DeadLetterQueue

@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends
 
-from src.infrastructure.database import db as database
+from infrastructure.database import db as database
 
 router = APIRouter()
 

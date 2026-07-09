@@ -6,13 +6,13 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 
-from src.api.dependencies.auth import (
+from api.dependencies.auth import (
     blacklist_token,
     get_current_org_with_membership,
     get_current_user,
     jwt_manager,
 )
-from src.api.schemas.auth import (
+from api.schemas.auth import (
     APIKeyCreateRequest,
     APIKeyResponse,
     LoginRequest,
@@ -22,9 +22,9 @@ from src.api.schemas.auth import (
     TokenResponse,
     UserProfile,
 )
-from src.infrastructure.auth.jwt import TokenData
-from src.infrastructure.auth.password import PasswordManager
-from src.infrastructure.database import db
+from infrastructure.auth.jwt import TokenData
+from infrastructure.auth.password import PasswordManager
+from infrastructure.database import db
 
 router = APIRouter()
 

@@ -11,12 +11,12 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Set
 from uuid import UUID
 
-from src.domain.experiments.events import ExperimentStarted, MetricLogged
-from src.domain.notebooks.events import NotebookUpdated
+from domain.experiments.events import ExperimentStarted, MetricLogged
+from domain.notebooks.events import NotebookUpdated
 
 # WebSocket manager would be imported here
-# from src.api.websocket.manager import WebSocketManager
-from src.domain.shared.events import DomainEvent
+# from api.websocket.manager import WebSocketManager
+from domain.shared.events import DomainEvent
 
 logger = logging.getLogger(__name__)
 

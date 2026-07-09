@@ -2,7 +2,7 @@
 from typing import Optional
 from uuid import UUID
 
-from src.domain.shared.events import DomainEvent
+from domain.shared.events import DomainEvent
 
 
 class ExperimentStarted(DomainEvent):

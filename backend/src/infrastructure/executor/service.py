@@ -4,7 +4,7 @@ import time
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from src.infrastructure.database import db
+from infrastructure.database import db
 
 # Timeout per block type (ms)
 BLOCK_TIMEOUTS = {

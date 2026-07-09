@@ -5,8 +5,8 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.infrastructure.auth.jwt import JWTManager, TokenData
-from src.infrastructure.database import db
+from infrastructure.auth.jwt import JWTManager, TokenData
+from infrastructure.database import db
 
 security = HTTPBearer()
 jwt_manager = JWTManager()

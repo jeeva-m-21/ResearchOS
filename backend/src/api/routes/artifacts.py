@@ -6,17 +6,17 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 
-from src.api.dependencies.auth import (
+from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
-from src.api.dependencies.events import get_event_producer
-from src.domain.artifacts.entities import ArtifactType
-from src.domain.artifacts.events import ArtifactUploaded
-from src.infrastructure.adapters.storage import LocalStorage
-from src.infrastructure.auth.jwt import TokenData
-from src.infrastructure.database import db
-from src.infrastructure.events.producer import EventProducer
+from api.dependencies.events import get_event_producer
+from domain.artifacts.entities import ArtifactType
+from domain.artifacts.events import ArtifactUploaded
+from infrastructure.adapters.storage import LocalStorage
+from infrastructure.auth.jwt import TokenData
+from infrastructure.database import db
+from infrastructure.events.producer import EventProducer
 
 router = APIRouter()
 

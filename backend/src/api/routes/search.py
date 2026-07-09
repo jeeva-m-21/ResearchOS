@@ -4,9 +4,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from src.application.search.service import SearchResponse, SearchService
-from src.infrastructure.adapters.embeddings.local import LocalEmbeddingAdapter
-from src.infrastructure.database import db
+from application.search.service import SearchResponse, SearchService
+from infrastructure.adapters.embeddings.local import LocalEmbeddingAdapter
+from infrastructure.database import db
 
 router = APIRouter()
 

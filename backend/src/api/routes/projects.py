@@ -4,12 +4,12 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.api.dependencies.auth import (
+from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
-from src.infrastructure.auth.jwt import TokenData
-from src.infrastructure.database import db
+from infrastructure.auth.jwt import TokenData
+from infrastructure.database import db
 
 router = APIRouter()
 

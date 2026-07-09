@@ -6,21 +6,21 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.api.dependencies.auth import (
+from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
-from src.api.dependencies.events import get_event_producer
-from src.domain.papers.events import (
+from api.dependencies.events import get_event_producer
+from domain.papers.events import (
     CitationAdded,
     CitationRemoved,
     PaperCreated,
     PaperDeleted,
     PaperEdited,
 )
-from src.infrastructure.auth.jwt import TokenData
-from src.infrastructure.database import db
-from src.infrastructure.events.producer import EventProducer
+from infrastructure.auth.jwt import TokenData
+from infrastructure.database import db
+from infrastructure.events.producer import EventProducer
 
 router = APIRouter()
 
@@ -568,9 +568,9 @@ async def compile_paper(
         }
 
     # Check if pdflatex is available
+    import os
     import subprocess
     import tempfile
-    import os
 
     try:
         subprocess.run(

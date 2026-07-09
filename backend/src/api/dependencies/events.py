@@ -4,7 +4,7 @@ from typing import Optional
 
 from redis.asyncio import Redis
 
-from src.infrastructure.events.producer import EventProducer
+from infrastructure.events.producer import EventProducer
 
 _producer: Optional[EventProducer] = None
 _redis: Optional[Redis] = None

@@ -8,7 +8,7 @@ Standalone scripts (``python script.py``) must add ``/app`` to sys.path
     import sys
     if "/app" not in sys.path:
         sys.path.insert(0, "/app")
-    from src.xxx import yyy
+    from xxx import yyy
 
 Tests and uvicorn work automatically because CWD is /app.
 """

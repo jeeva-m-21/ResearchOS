@@ -4,7 +4,7 @@ from typing import Any
 import httpx
 import pytest
 
-BASE_URL = "http://backend:8000"
+BASE_URL = "http://localhost:8000"
 LOGIN_URL = f"{BASE_URL}/auth/login"
 LOGOUT_URL = f"{BASE_URL}/auth/logout"
 

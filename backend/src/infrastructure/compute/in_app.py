@@ -4,12 +4,12 @@ import time
 from typing import Optional
 from uuid import uuid4
 
-from src.application.compute.dto import ExecutionRequest, ExecutionResult
-from src.application.compute.provider import ComputeProvider
-from src.infrastructure.database import Database
+from application.compute.dto import ExecutionRequest, ExecutionResult
+from application.compute.provider import ComputeProvider
+from infrastructure.database import Database
 
 # Default global db instance
-from src.infrastructure.database import db as _default_db
+from infrastructure.database import db as _default_db
 
 
 class InAppProvider(ComputeProvider):

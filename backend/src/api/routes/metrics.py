@@ -5,15 +5,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.api.dependencies.auth import (
+from api.dependencies.auth import (
     get_current_org_with_membership,
     get_current_user,
 )
-from src.api.dependencies.events import get_event_producer
-from src.domain.experiments.events import MetricLogged
-from src.infrastructure.auth.jwt import TokenData
-from src.infrastructure.database import db
-from src.infrastructure.events.producer import EventProducer
+from api.dependencies.events import get_event_producer
+from domain.experiments.events import MetricLogged
+from infrastructure.auth.jwt import TokenData
+from infrastructure.database import db
+from infrastructure.events.producer import EventProducer
 
 router = APIRouter()
 

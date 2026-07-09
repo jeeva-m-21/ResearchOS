@@ -13,8 +13,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from src.domain.shared.events import DomainEvent
-from src.infrastructure.database import db
+from domain.shared.events import DomainEvent
+from infrastructure.database import db
 
 logger = logging.getLogger(__name__)
 

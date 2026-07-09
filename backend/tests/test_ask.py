@@ -14,7 +14,7 @@ TEST_ORG_ID = "02b5991b-d971-41fc-b257-4ded07d94aac"
 @pytest.mark.asyncio
 async def test_search_tool_returns_string():
     """The SearchTool should return a string result."""
-    from src.application.ai.tools import SearchTool
+    from application.ai.tools import SearchTool
 
     tool = SearchTool()
     result = await tool.execute(query="transformer")
@@ -25,7 +25,7 @@ async def test_search_tool_returns_string():
 @pytest.mark.asyncio
 async def test_get_experiment_tool_returns_string():
     """The GetExperimentTool should return a string result."""
-    from src.application.ai.tools import GetExperimentTool
+    from application.ai.tools import GetExperimentTool
 
     tool = GetExperimentTool()
     result = await tool.execute(experiment_id="00000000-0000-0000-0000-000000000000")
@@ -36,7 +36,7 @@ async def test_get_experiment_tool_returns_string():
 @pytest.mark.asyncio
 async def test_get_notebook_tool_returns_string():
     """The GetNotebookTool should return a string result."""
-    from src.application.ai.tools import GetNotebookTool
+    from application.ai.tools import GetNotebookTool
 
     tool = GetNotebookTool()
     result = await tool.execute(notebook_id="00000000-0000-0000-0000-000000000000")
@@ -47,7 +47,7 @@ async def test_get_notebook_tool_returns_string():
 @pytest.mark.asyncio
 async def test_list_experiments_tool_returns_string():
     """The ListExperimentsTool should return a string result."""
-    from src.application.ai.tools import ListExperimentsTool
+    from application.ai.tools import ListExperimentsTool
 
     tool = ListExperimentsTool()
     result = await tool.execute()
@@ -58,7 +58,7 @@ async def test_list_experiments_tool_returns_string():
 @pytest.mark.asyncio
 async def test_list_notebooks_tool_returns_string():
     """The ListNotebooksTool should return a string result."""
-    from src.application.ai.tools import ListNotebooksTool
+    from application.ai.tools import ListNotebooksTool
 
     tool = ListNotebooksTool()
     result = await tool.execute()
@@ -69,7 +69,7 @@ async def test_list_notebooks_tool_returns_string():
 @pytest.mark.asyncio
 async def test_get_block_content_tool_returns_string():
     """The GetBlockContentTool should return a string result."""
-    from src.application.ai.tools import GetBlockContentTool
+    from application.ai.tools import GetBlockContentTool
 
     tool = GetBlockContentTool()
     result = await tool.execute(block_id="00000000-0000-0000-0000-000000000000")
@@ -80,7 +80,7 @@ async def test_get_block_content_tool_returns_string():
 @pytest.mark.asyncio
 async def test_get_paper_tool_returns_string():
     """The GetPaperTool should return a string result."""
-    from src.application.ai.tools import GetPaperTool
+    from application.ai.tools import GetPaperTool
 
     tool = GetPaperTool()
     result = await tool.execute(paper_id="00000000-0000-0000-0000-000000000000")
@@ -91,7 +91,7 @@ async def test_get_paper_tool_returns_string():
 @pytest.mark.asyncio
 async def test_list_papers_tool_returns_string():
     """The ListPapersTool should return a string result."""
-    from src.application.ai.tools import ListPapersTool
+    from application.ai.tools import ListPapersTool
 
     tool = ListPapersTool()
     result = await tool.execute()
@@ -102,7 +102,7 @@ async def test_list_papers_tool_returns_string():
 @pytest.mark.asyncio
 async def test_edit_paper_tool_returns_string():
     """The EditPaperTool should return a string result."""
-    from src.application.ai.tools import EditPaperTool
+    from application.ai.tools import EditPaperTool
 
     tool = EditPaperTool()
     result = await tool.execute(
@@ -116,7 +116,7 @@ async def test_edit_paper_tool_returns_string():
 @pytest.mark.asyncio
 async def test_create_experiment_tool_returns_string():
     """The CreateExperimentTool should return a string result."""
-    from src.application.ai.tools import CreateExperimentTool
+    from application.ai.tools import CreateExperimentTool
 
     tool = CreateExperimentTool()
     result = await tool.execute(
@@ -131,7 +131,7 @@ async def test_create_experiment_tool_returns_string():
 @pytest.mark.asyncio
 async def test_create_notebook_tool_returns_string():
     """The CreateNotebookTool should return a string result."""
-    from src.application.ai.tools import CreateNotebookTool
+    from application.ai.tools import CreateNotebookTool
 
     tool = CreateNotebookTool()
     result = await tool.execute(
@@ -146,7 +146,7 @@ async def test_create_notebook_tool_returns_string():
 @pytest.mark.asyncio
 async def test_all_tool_definitions_have_required_fields():
     """Every tool must have name, description, and parameters."""
-    from src.application.ai.tools import (
+    from application.ai.tools import (
         CreateExperimentTool,
         CreateNotebookTool,
         EditPaperTool,
@@ -198,7 +198,7 @@ class FakeLLMProvider:
 @pytest.mark.asyncio
 async def test_orchestrator_returns_tokens():
     """The orchestrator should yield token events for a simple query."""
-    from src.application.ai import AIOrchestrator, AskRequest
+    from application.ai import AIOrchestrator, AskRequest
 
     orchestrator = AIOrchestrator(llm_provider=FakeLLMProvider(), tools=[])
     request = AskRequest(message="Hello", stream=True)
@@ -217,7 +217,7 @@ async def test_orchestrator_returns_tokens():
 @pytest.mark.asyncio
 async def test_orchestrator_creates_session():
     """The orchestrator should create a session_id for new conversations."""
-    from src.application.ai import AIOrchestrator, AskRequest
+    from application.ai import AIOrchestrator, AskRequest
 
     orchestrator = AIOrchestrator(llm_provider=FakeLLMProvider(), tools=[])
     request = AskRequest(message="Test", stream=True)
@@ -234,7 +234,7 @@ async def test_orchestrator_creates_session():
 @pytest.mark.asyncio
 async def test_orchestrator_persists_session():
     """Messages should be persisted to the session."""
-    from src.application.ai import AIOrchestrator, AskRequest
+    from application.ai import AIOrchestrator, AskRequest
 
     orchestrator = AIOrchestrator(llm_provider=FakeLLMProvider(), tools=[])
     request = AskRequest(message="First message", stream=True)
@@ -253,7 +253,7 @@ async def test_orchestrator_persists_session():
 @pytest.mark.asyncio
 async def test_orchestrator_tool_definitions():
     """Tool definitions should be returned from the orchestrator."""
-    from src.application.ai import AIOrchestrator, SearchTool
+    from application.ai import AIOrchestrator, SearchTool
 
     tool = SearchTool()
     orchestrator = AIOrchestrator(llm_provider=FakeLLMProvider(), tools=[tool])
@@ -340,7 +340,7 @@ async def test_list_models_endpoint():
 @pytest.mark.asyncio
 async def test_ollama_provider_default_config():
     """Ollama provider should initialize with default config."""
-    from src.infrastructure.adapters.llm import OllamaProvider
+    from infrastructure.adapters.llm import OllamaProvider
 
     provider = OllamaProvider()
     assert provider.provider_name == "ollama"
@@ -350,7 +350,7 @@ async def test_ollama_provider_default_config():
 @pytest.mark.asyncio
 async def test_openai_provider_default_config():
     """OpenAI provider should initialize with env config."""
-    from src.infrastructure.adapters.llm import OpenAIProvider
+    from infrastructure.adapters.llm import OpenAIProvider
 
     provider = OpenAIProvider(api_key="test-key")
     assert provider.provider_name == "openai"
@@ -360,7 +360,7 @@ async def test_openai_provider_default_config():
 @pytest.mark.asyncio
 async def test_anthropic_provider_default_config():
     """Anthropic provider should initialize with env config."""
-    from src.infrastructure.adapters.llm import AnthropicProvider
+    from infrastructure.adapters.llm import AnthropicProvider
 
     provider = AnthropicProvider(api_key="test-key")
     assert provider.provider_name == "anthropic"

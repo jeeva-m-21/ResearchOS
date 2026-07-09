@@ -11,8 +11,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
 
-from src.infrastructure.database import db
-from src.infrastructure.events import EventConsumer, EventStore
+from infrastructure.database import db
+from infrastructure.events import EventConsumer, EventStore
 
 from .middleware.auth import AuthMiddleware, OrganizationMiddleware
 from .routes import (

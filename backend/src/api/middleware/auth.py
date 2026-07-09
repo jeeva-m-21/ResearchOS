@@ -5,10 +5,10 @@ from uuid import UUID
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.api.dependencies.auth import (
+from api.dependencies.auth import (
     is_token_blacklisted,
 )
-from src.infrastructure.auth.jwt import JWTManager
+from infrastructure.auth.jwt import JWTManager
 
 jwt_manager = JWTManager()
 

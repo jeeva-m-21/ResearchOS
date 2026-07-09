@@ -68,11 +68,11 @@ class SearchTool(ResearchTool):
         limit = kwargs.get("limit", 10)
         org_id = kwargs.get("organization_id")
         try:
-            from src.application.search.service import SearchService
-            from src.infrastructure.adapters.embeddings.local import (
+            from application.search.service import SearchService
+            from infrastructure.adapters.embeddings.local import (
                 LocalEmbeddingAdapter,
             )
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             search = SearchService(
                 db=db,
@@ -124,7 +124,7 @@ class GetExperimentTool(ResearchTool):
     async def execute(self, experiment_id: str, **kwargs) -> str:
         org_id = kwargs.get("organization_id")
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             experiment = await db.fetch_one(
                 """
@@ -209,7 +209,7 @@ class GetNotebookTool(ResearchTool):
     async def execute(self, notebook_id: str, **kwargs) -> str:
         org_id = kwargs.get("organization_id")
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             notebook = await db.fetch_one(
                 """
@@ -299,7 +299,7 @@ class ListExperimentsTool(ResearchTool):
         project_id = kwargs.get("project_id")
         limit = kwargs.get("limit", 20)
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             if project_id:
                 rows = await db.fetch_all(
@@ -379,7 +379,7 @@ class ListNotebooksTool(ResearchTool):
         project_id = kwargs.get("project_id")
         limit = kwargs.get("limit", 20)
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             if project_id:
                 rows = await db.fetch_all(
@@ -457,7 +457,7 @@ class GetBlockContentTool(ResearchTool):
     async def execute(self, block_id: str, **kwargs) -> str:
         org_id = kwargs.get("organization_id")
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             block = await db.fetch_one(
                 """
@@ -519,7 +519,7 @@ class GetPaperTool(ResearchTool):
     async def execute(self, paper_id: str, **kwargs) -> str:
         org_id = kwargs.get("organization_id")
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             paper = await db.fetch_one(
                 """
@@ -624,7 +624,7 @@ class ListPapersTool(ResearchTool):
         status_filter = kwargs.get("status")
         limit = kwargs.get("limit", 20)
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             params = [org_id]
             conditions = [
@@ -745,7 +745,7 @@ class EditPaperTool(ResearchTool):
     async def execute(self, paper_id: str, **kwargs) -> str:
         org_id = kwargs.get("organization_id")
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             # Verify paper exists
             existing = await db.fetch_one(
@@ -879,7 +879,7 @@ class CreateExperimentTool(ResearchTool):
         description = kwargs.get("description")
         tags_str = kwargs.get("tags")
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             # Verify project exists
             project = await db.fetch_one(
@@ -966,7 +966,7 @@ class CreateNotebookTool(ResearchTool):
         org_id = kwargs.get("organization_id")
         description = kwargs.get("description")
         try:
-            from src.infrastructure.database import db
+            from infrastructure.database import db
 
             # Verify project exists
             project = await db.fetch_one(

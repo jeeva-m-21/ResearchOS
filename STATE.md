@@ -1,22 +1,15 @@
 # STATE.md
 
-## Current Sprint: T-032 — LaTeX Papers + AI Creation Tools ✅
+## Current Sprint: T-033 — Import Path Normalization
 
-**Goal**: Enable LaTeX format for papers with a dedicated editor and compile-to-PDF preview. Give the AI assistant tools to create experiments, notebooks, and edit papers directly.
+**Goal**: Fix the Python import path duplication bug causing notebook execution records not to be persisted. Normalize all imports to use consistent paths, making all tests pass green.
 
-### Plan — 6 steps ✅ ALL DONE
+### Plan — 4 steps
 
-1. ✅ **Migration + API update**: Add `latex_content TEXT` column to papers table. Update papers CRUD routes to accept/return `latex_content`.
-
-2. ✅ **AI — EditPaperTool**: Add tool that lets AI update paper fields (title, abstract, status, latex_content). Register in ask.py.
-
-3. ✅ **AI — CreateExperimentTool + CreateNotebookTool**: Add tools that let AI create experiments and notebooks with specified names/projects. Register in ask.py.
-
-4. ✅ **Frontend — Papers detail page**: Create `app/dashboard/papers/[id]/page.tsx` with metadata editing, LaTeX source editing (CodeMirror), citation list.
-
-5. ✅ **Frontend — LaTeX compile endpoint**: Create `POST /v1/papers/{id}/compile` that runs `pdflatex` (or returns setup instructions).
-
-6. ✅ **Update tests**: Add tests for new AI tools and compile endpoint. 74/74 passing.
+1. **Remove `from src.` prefix** from all imports across `src/` (28 files) — use `sed` inside container
+2. **Fix test imports** — update `test_ask.py` and `seed_search_data.py` to remove `src.` prefix
+3. **Run full test suite** — verify all 74 tests pass with the fix
+4. **Clean up `.pth` fix** — remove the workaround since it's no longer needed
 
 ### Done
 - T-032 — LaTeX Papers + AI Creation Tools (all 6 steps)

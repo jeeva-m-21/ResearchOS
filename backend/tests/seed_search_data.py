@@ -14,7 +14,7 @@ import asyncio
 
 import asyncpg
 
-from src.infrastructure.adapters.embeddings.local import LocalEmbeddingAdapter
+from infrastructure.adapters.embeddings.local import LocalEmbeddingAdapter
 
 DATABASE_URL = "postgresql://researchos:researchos@postgres:5432/researchos"
 TEST_ORG_ID = "02b5991b-d971-41fc-b257-4ded07d94aac"

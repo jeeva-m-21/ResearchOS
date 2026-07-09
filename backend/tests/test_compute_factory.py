@@ -3,9 +3,9 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from src.application.compute import ComputeFactory, ExecutionRequest, ExecutionResult
-from src.application.compute.provider import ComputeProvider
-from src.infrastructure.compute import InAppProvider
+from application.compute import ComputeFactory, ExecutionRequest, ExecutionResult
+from application.compute.provider import ComputeProvider
+from infrastructure.compute import InAppProvider
 
 # ── Fake provider for testing ──────────────────────────────────────────
 

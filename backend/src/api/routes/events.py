@@ -14,12 +14,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from redis.asyncio import Redis
 
-from src.api.dependencies.auth import get_current_org, get_current_user
-from src.domain.experiments.events import ExperimentStarted, MetricLogged, RunCompleted
-from src.domain.shared.events import DomainEvent
-from src.infrastructure.auth.jwt import TokenData
-from src.infrastructure.events.producer import EventProducer
-from src.infrastructure.events.service import EventsService, EventsServiceFactory
+from api.dependencies.auth import get_current_org, get_current_user
+from domain.experiments.events import ExperimentStarted, MetricLogged, RunCompleted
+from domain.shared.events import DomainEvent
+from infrastructure.auth.jwt import TokenData
+from infrastructure.events.producer import EventProducer
+from infrastructure.events.service import EventsService, EventsServiceFactory
 
 router = APIRouter()
 
@@ -32,7 +32,7 @@ async def get_redis() -> Redis:
 
 async def get_db():
     """Simplified database dependency"""
-    from src.infrastructure.database import db
+    from infrastructure.database import db
     return db
 
 

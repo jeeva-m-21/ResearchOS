@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import Field
 
-from src.domain.shared.events import DomainEvent
+from domain.shared.events import DomainEvent
 
 
 class PaperCreated(DomainEvent):

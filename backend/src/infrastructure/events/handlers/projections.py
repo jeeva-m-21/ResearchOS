@@ -11,10 +11,10 @@ from typing import Any, Dict
 
 import asyncpg
 
-from src.domain.experiments.events import ExperimentStarted, MetricLogged
-from src.domain.notebooks.events import NotebookUpdated
-from src.domain.papers.events import PaperEdited
-from src.domain.shared.events import DomainEvent
+from domain.experiments.events import ExperimentStarted, MetricLogged
+from domain.notebooks.events import NotebookUpdated
+from domain.papers.events import PaperEdited
+from domain.shared.events import DomainEvent
 
 logger = logging.getLogger(__name__)
 

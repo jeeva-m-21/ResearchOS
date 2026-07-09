@@ -7,8 +7,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from src.api.dependencies.auth import get_current_org
-from src.application.ai import (
+from api.dependencies.auth import get_current_org
+from application.ai import (
     AIOrchestrator,
     AskRequest,
     CreateExperimentTool,
@@ -24,7 +24,7 @@ from src.application.ai import (
     ModelInfo,
     SearchTool,
 )
-from src.infrastructure.adapters.llm import (
+from infrastructure.adapters.llm import (
     AnthropicProvider,
     OllamaProvider,
     OpenAIProvider,
