@@ -1,4 +1,4 @@
-"""Hybrid search service combining vector similarity and BM25."""
+"""Hybrid search service combining vector similarity, BM25, and graph traversal."""
 
 import asyncio
 import time
@@ -30,13 +30,30 @@ class SearchResponse:
     query: str = ""
 
 
+@dataclass
+class GraphTraversalResult:
+    """A single step in a graph traversal — from a start node to a related node."""
+
+    source_id: UUID
+    source_title: str
+    source_type: str
+    target_id: UUID
+    target_title: str
+    target_type: str
+    edge_id: UUID
+    edge_type: str
+    direction: str  # "outgoing" or "incoming"
+    depth: int
+
+
 class SearchService:
     """Hybrid search over the nodes table.
 
     Combines:
     1. Vector (semantic) search via pgvector cosine similarity
     2. BM25 (keyword) search via PostgreSQL tsvector
-    3. Reciprocal Rank Fusion for final ranking
+    3. Graph traversal via edges table (relationship search)
+    4. Reciprocal Rank Fusion for final ranking
     """
 
     def __init__(self, db: Any, embedding_adapter: Any, rrf_k: int = 60):
@@ -82,6 +99,131 @@ class SearchService:
             took_ms=elapsed,
             query=query,
         )
+
+    async def graph_search(
+        self,
+        node_id: UUID,
+        organization_id: UUID,
+        direction: str = "outgoing",
+        edge_type: Optional[str] = None,
+        max_depth: int = 2,
+        limit: int = 20,
+    ) -> list[GraphTraversalResult]:
+        """Traverse the graph from a starting node along edges.
+
+        Returns all reachable nodes within ``max_depth`` hops.
+        """
+        results: list[GraphTraversalResult] = []
+        visited: set[UUID] = {node_id}
+        current_level: list[tuple[UUID, int]] = [(node_id, 0)]
+
+        while current_level:
+            node_id_current, depth = current_level.pop(0)
+            if depth >= max_depth:
+                continue
+
+            # Fetch outgoing edges (only if direction is outgoing or both)
+            if direction in ("outgoing", "both"):
+                rows = await self.db.fetch_all(
+                    """
+                    SELECT e.id AS edge_id, e.edge_type::text,
+                           e.target_id AS related_id,
+                           n.title AS related_title, n.node_type::text AS related_type
+                    FROM edges e
+                    JOIN nodes n ON e.target_id = n.id
+                    WHERE e.source_id = $1
+                      AND e.organization_id = $2
+                      AND e.deleted_at IS NULL
+                      AND n.deleted_at IS NULL
+                      AND ($3::text IS NULL OR e.edge_type::text = $3)
+                    ORDER BY e.weight DESC, e.created_at DESC
+                    LIMIT $4
+                    """,
+                    node_id_current,
+                    organization_id,
+                    edge_type,
+                    limit,
+                )
+                for r in rows:
+                    related_id = r["related_id"]
+                    if related_id not in visited:
+                        visited.add(related_id)
+                        current_level.append((related_id, depth + 1))
+                    results.append(GraphTraversalResult(
+                        source_id=node_id_current,
+                        source_title="",  # filled by caller if needed
+                        source_type="",
+                        target_id=related_id,
+                        target_title=r["related_title"],
+                        target_type=r["related_type"],
+                        edge_id=r["edge_id"],
+                        edge_type=r["edge_type"],
+                        direction="outgoing",
+                        depth=depth + 1,
+                    ))
+
+            # If direction includes incoming, fetch incoming edges too
+            if direction in ("incoming", "both"):
+                rows_in = await self.db.fetch_all(
+                    """
+                    SELECT e.id AS edge_id, e.edge_type::text,
+                           e.source_id AS related_id,
+                           n.title AS related_title, n.node_type::text AS related_type
+                    FROM edges e
+                    JOIN nodes n ON e.source_id = n.id
+                    WHERE e.target_id = $1
+                      AND e.organization_id = $2
+                      AND e.deleted_at IS NULL
+                      AND n.deleted_at IS NULL
+                      AND ($3::text IS NULL OR e.edge_type::text = $3)
+                    ORDER BY e.weight DESC, e.created_at DESC
+                    LIMIT $4
+                    """,
+                    node_id_current,
+                    organization_id,
+                    edge_type,
+                    limit,
+                )
+                for r in rows_in:
+                    related_id = r["related_id"]
+                    if related_id not in visited:
+                        visited.add(related_id)
+                        current_level.append((related_id, depth + 1))
+                    results.append(GraphTraversalResult(
+                        source_id=node_id_current,
+                        source_title="",
+                        source_type="",
+                        target_id=related_id,
+                        target_title=r["related_title"],
+                        target_type=r["related_type"],
+                        edge_id=r["edge_id"],
+                        edge_type=r["edge_type"],
+                        direction="incoming",
+                        depth=depth + 1,
+                    ))
+
+        # Enrich source titles for the first hop
+        source_ids = {r.source_id for r in results if not r.source_title}
+        if source_ids:
+            rows_src = await self.db.fetch_all(
+                """
+                SELECT id, title, node_type::text
+                FROM nodes
+                WHERE id = ANY($1::uuid[])
+                  AND organization_id = $2
+                  AND deleted_at IS NULL
+                """,
+                list(source_ids),
+                organization_id,
+            )
+            src_lookup = {r["id"]: r for r in rows_src}
+            for r in results:
+                src = src_lookup.get(r.source_id)
+                if src:
+                    r.source_title = src["title"]
+                    r.source_type = src["node_type"]
+
+        return results
 
     async def _vector_search(
         self,

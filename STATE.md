@@ -1,25 +1,21 @@
 # STATE.md
 
-## Current Sprint: T-036 — Enhanced Search (DONE)
+## Current Sprint: T-038 — Graph Search: Edge-based Result Enrichment
 
-**Goal**: Improve search UX with structured suggestion data (showing node type) and highlighted result snippets.
+**Goal**: Add graph search capability by creating the `edges` table, implementing graph domain entities, and integrating edge-based traversal into the search service so users can query relationships between research nodes.
 
-### Results
-- **SearchResult** now includes `highlights` field with `ts_headline()`-generated title/description snippets
-- **Suggestions** endpoint returns structured objects (`id`, `title`, `node_type`, `similarity`)
-- **Frontend** suggestions dropdown shows node type badges + icons; clicking sets query by title
-- **Tests**: 75/75 pass (new `test_search_highlights`, updated `test_suggestions`)
+### Plan
+1. ✅ Step 1: Create Alembic migration for `edge_type` enum and `edges` table
+2. ✅ Step 2: Implement domain entities for graph in `domain/graph/`
+3. ✅ Step 3: Add graph search to SearchService + API route
+4. ✅ Step 4: Seed edge data between existing test nodes
+5. ✅ Step 5: Write tests for graph search
+6. ✅ Step 6: Run feedback loop (ruff, mypy, pytest) and commit
 
-### Plan executed
-1. ✅ Added `highlights` to SearchResult + `ts_headline()` in `_hydrate`
-2. ✅ Changed suggestions endpoint to return structured dicts
-3. ✅ Updated frontend types + API client (SuggestionResult, SearchResult.highlights)
-4. ✅ Updated suggestions dropdown to show node type badges
-5. ✅ Updated tests — all 75 passing
-
-**Status**: Done
+**Status**: In Progress — Step 5
 
 ### Done (previous sprints)
+- T-037 — Comprehensive README (Mermaid diagrams, ASCII art, full API reference)
 - T-036 — Enhanced Search: Rich Suggestions + Result Highlighting (75/75)
 - T-035 — Inline Block Editing in Frontend (74/74 tests)
 - T-034 — AI Chat Session Persistence (74/74 tests)
@@ -30,7 +26,6 @@
 - T-026 — Research AI Chat Assistant (backend + frontend + tests)
 
 ### Next priorities (available)
-- **Graph search**: requires `edges` table (migration + seeding) — ~2-3 sprints
 - **Python SDK offline-first WAL sync**: large feature, ~4-5 sprints
 - **Event System consumer health dashboard**: medium, ~1 sprint
 - **Dockerfile changes**: protected path (cannot edit)
