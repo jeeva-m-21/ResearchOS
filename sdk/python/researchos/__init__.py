@@ -1,5 +1,8 @@
 """ResearchOS Python SDK"""
 
+from typing import Optional
+
+from .autolog import AutoLogger
 from .client import ResearchOSClient
 from .experiment import Experiment
 from .protocol.events import (
@@ -16,10 +19,11 @@ from .protocol.events import (
 from .protocol.validation import deserialize_event, serialize_event
 from .sync import Syncer
 from .utils.backoff import ExponentialBackoff
-from .utils.hash import sha256_file, sha256_bytes
+from .utils.hash import sha256_bytes, sha256_file
 from .wal import WAL
 
-_client: ResearchOSClient = None
+_client: Optional[ResearchOSClient] = None
+_autologger: Optional[AutoLogger] = None
 
 
 def init(
@@ -58,11 +62,44 @@ def finish(status: str = "completed") -> None:
         _client.finish(status=status)
 
 
+def enable_autolog(interval: float = 5.0) -> None:
+    """Enable automatic system/GPU metric logging for the active experiment.
+
+    Starts a background thread that periodically captures CPU, memory, disk,
+    and (when available) GPU metrics and logs them as experiment metrics.
+
+    Args:
+        interval: Seconds between metric polls (default 5.0).
+
+    Raises:
+        RuntimeError: If no experiment has been initialized via ``init()``.
+    """
+    global _autologger
+    if _client is None:
+        raise RuntimeError("Call researchos.init() first")
+
+    if _autologger is not None and _autologger.is_running:
+        return  # Already running
+
+    _autologger = AutoLogger(log_metric_fn=_client.log_metric)
+    _autologger.start(interval=interval)
+
+
+def disable_autolog() -> None:
+    """Disable automatic metric logging and stop the background thread."""
+    global _autologger
+    if _autologger is not None:
+        _autologger.stop()
+        _autologger = None
+
+
 __all__ = [
     "init",
     "log_metric",
     "log_parameters",
     "finish",
+    "enable_autolog",
+    "disable_autolog",
     "Experiment",
     "ExponentialBackoff",
     "sha256_file",

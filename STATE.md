@@ -1,18 +1,20 @@
 # STATE.md
 
-## Current Sprint: T-040 — Wire SDK Client to WAL for Offline-First Persistence
+## Current Sprint: T-041 — SDK Autolog: System/GPU Metrics Auto-Logging
 
-**Goal**: Make the Python SDK actually persist events via the Write-Ahead Log and sync them to the backend. Currently `client.py` and `experiment.py` are stubs with TODOs. This sprint wires them to the existing WAL + Syncer and adds the missing utility modules.
+**Goal**: Create an `autolog` module that automatically captures system metrics (CPU, memory, disk) and GPU metrics (when available) and logs them as experiment metrics via the WAL-backed client. Users get zero-effort system monitoring in their experiments.
 
-### Plan
-1. Add `utils/backoff.py` — exponential backoff with jitter for sync retry
-2. Add `utils/hash.py` — SHA-256 file hashing for artifact support
-3. Rewrite `experiment.py` as a proper context manager that initializes WAL + sync
-4. Rewrite `client.py` to wire `init_experiment`, `log_metric`, `log_parameter`, `finish` into WAL persistence + background sync
-5. Write tests for the wired client (append to WAL, offset tracking, background sync)
-6. Run tests inside Docker and commit
+**Status**: DONE (13 autolog tests + 16 existing = 29/29 SDK tests green)
 
-**Status**: Done
+### What was implemented
+- `researchos/autolog/__init__.py` — package exports (AutoLogger, collect_system_metrics, GPUCollector)
+- `researchos/autolog/system.py` — CPU/memory/disk collectors via psutil with `sys/` prefix
+- `researchos/autolog/gpu.py` — GPU collector via nvidia-smi with graceful fallback (empty dict if no GPU)
+- `researchos/autolog/monitor.py` — `AutoLogger` background thread that polls and logs via callback
+- `sdk/python/researchos/__init__.py` — `enable_autolog()`/`disable_autolog()` top-level functions
+- `sdk/python/researchos/experiment.py` — `Experiment(autolog=True, autolog_interval=5.0)` support
+- `sdk/python/pyproject.toml` — added `psutil>=5.9.0` dependency
+- `sdk/python/tests/test_autolog.py` — 13 tests: unit (system/gpu/monitor) + integration (WAL, top-level API, Experiment context manager)
 
 ### Done (previous sprints)
 - T-040 — Wire SDK Client to WAL for Offline-First Persistence (16/16 tests)
@@ -29,6 +31,5 @@
 - T-026 — Research AI Chat Assistant (backend + frontend + tests)
 
 ### Next priorities (available)
-- **SDK autolog modules**: system/GPU metrics auto-logging (next logical slice)
 - **SDK artifact support**: file hashing + artifact upload events
 - **Dockerfile changes**: protected path (cannot edit)
