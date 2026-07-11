@@ -12,9 +12,10 @@
 5. ✅ Step 5: Write tests for graph search
 6. ✅ Step 6: Run feedback loop (ruff, mypy, pytest) and commit
 
-**Status**: In Progress — Step 5
+**Status**: Done
 
 ### Done (previous sprints)
+- T-038 — Graph Search: Edge-based Result Enrichment (81/81 tests)
 - T-037 — Comprehensive README (Mermaid diagrams, ASCII art, full API reference)
 - T-036 — Enhanced Search: Rich Suggestions + Result Highlighting (75/75)
 - T-035 — Inline Block Editing in Frontend (74/74 tests)
