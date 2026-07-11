@@ -15,15 +15,27 @@ from .protocol.events import (
 )
 from .protocol.validation import deserialize_event, serialize_event
 from .sync import Syncer
+from .utils.backoff import ExponentialBackoff
+from .utils.hash import sha256_file, sha256_bytes
 from .wal import WAL
 
 _client: ResearchOSClient = None
 
 
-def init(experiment: str, project: str = None, api_key: str = None, **kwargs) -> None:
+def init(
+    experiment: str,
+    project: str = None,
+    api_key: str = None,
+    organization_id=None,
+    **kwargs,
+) -> None:
     """Initialize ResearchOS"""
     global _client
-    _client = ResearchOSClient(api_key=api_key, **kwargs)
+    _client = ResearchOSClient(
+        api_key=api_key,
+        organization_id=organization_id,
+        **kwargs,
+    )
     _client.init_experiment(experiment, project=project)
 
 
@@ -52,6 +64,9 @@ __all__ = [
     "log_parameters",
     "finish",
     "Experiment",
+    "ExponentialBackoff",
+    "sha256_file",
+    "sha256_bytes",
     "Syncer",
     "WAL",
     "EventType",
