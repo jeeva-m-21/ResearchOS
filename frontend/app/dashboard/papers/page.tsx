@@ -200,7 +200,7 @@ export default function PapersPage() {
             New Paper
           </Button>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

@@ -1,20 +1,26 @@
 # STATE.md
 
-## Current Sprint: T-036 — Enhanced Search: Rich Suggestions + Result Highlighting
+## Current Sprint: T-036 — Enhanced Search (DONE)
 
 **Goal**: Improve search UX with structured suggestion data (showing node type) and highlighted result snippets.
 
-### Plan
+### Results
+- **SearchResult** now includes `highlights` field with `ts_headline()`-generated title/description snippets
+- **Suggestions** endpoint returns structured objects (`id`, `title`, `node_type`, `similarity`)
+- **Frontend** suggestions dropdown shows node type badges + icons; clicking sets query by title
+- **Tests**: 75/75 pass (new `test_search_highlights`, updated `test_suggestions`)
 
-1. **Add `highlights` to SearchResult backend model** — Add `highlights` field to `SearchResult` dataclass; modify `_hydrate` to use `ts_headline()` for highlighted title/description snippets
-2. **Improve suggestions endpoint to return structured data** — Change `/v1/search/suggestions` from `list[str]` to `list[dict]` with `title`, `node_type`, `id`, `similarity`
-3. **Update frontend types + API client** — Add `SuggestionResult` interface, update `fetchSuggestions()`, add `highlights` to `SearchResult`
-4. **Update frontend suggestions dropdown** — Show node type badge + icon per suggestion; clicking searches for that title
-5. **Update tests** — Update `test_suggestions` for new shape; add `test_search_highlights`
+### Plan executed
+1. ✅ Added `highlights` to SearchResult + `ts_headline()` in `_hydrate`
+2. ✅ Changed suggestions endpoint to return structured dicts
+3. ✅ Updated frontend types + API client (SuggestionResult, SearchResult.highlights)
+4. ✅ Updated suggestions dropdown to show node type badges
+5. ✅ Updated tests — all 75 passing
 
-**Status**: Planning
+**Status**: Done
 
 ### Done (previous sprints)
+- T-036 — Enhanced Search: Rich Suggestions + Result Highlighting (75/75)
 - T-035 — Inline Block Editing in Frontend (74/74 tests)
 - T-034 — AI Chat Session Persistence (74/74 tests)
 - T-033 — Import Path Normalization (74/74 tests)
@@ -23,7 +29,8 @@
 - T-030 — Research Papers Feature (domain, migration, API, frontend)
 - T-026 — Research AI Chat Assistant (backend + frontend + tests)
 
-### Next priorities (blocked/larger scope)
-- Search autocomplete: depends on T-036 (enhanced from basic)
-- Graph search: requires edges table (migration + seeding)
-- Dockerfile changes: protected path (cannot edit)
+### Next priorities (available)
+- **Graph search**: requires `edges` table (migration + seeding) — ~2-3 sprints
+- **Python SDK offline-first WAL sync**: large feature, ~4-5 sprints
+- **Event System consumer health dashboard**: medium, ~1 sprint
+- **Dockerfile changes**: protected path (cannot edit)
