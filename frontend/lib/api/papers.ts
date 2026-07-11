@@ -22,7 +22,7 @@ export interface Paper {
   abstract: string | null
   status: string
   version: number
-  authors: string[]
+  authors: string[] | string
   doi: string | null
   arxiv_id: string | null
   tags: string[]

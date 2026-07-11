@@ -164,12 +164,17 @@ export default function PapersPage() {
                       </p>
                     )}
                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      {paper.authors && paper.authors.length > 0 && (
-                        <span className="flex items-center gap-1">
-                          {paper.authors.slice(0, 3).join(', ')}
-                          {paper.authors.length > 3 ? ' et al.' : ''}
-                        </span>
-                      )}
+                      {(() => {
+                        const authorList: string[] = typeof paper.authors === 'string'
+                          ? (() => { try { return JSON.parse(paper.authors); } catch { return paper.authors ? [paper.authors] : []; } })()
+                          : (paper.authors ?? [])
+                        return authorList.length > 0 ? (
+                          <span className="flex items-center gap-1">
+                            {authorList.slice(0, 3).join(', ')}
+                            {authorList.length > 3 ? ' et al.' : ''}
+                          </span>
+                        ) : null
+                      })()}
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {new Date(paper.created_at).toLocaleDateString()}
