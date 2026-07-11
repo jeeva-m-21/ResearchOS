@@ -21,6 +21,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
 import {
+  Activity,
   MessageSquare,
   BarChart3,
   FlaskConical,
@@ -44,6 +45,7 @@ const navItems = [
   { href: '/dashboard/experiments', label: 'Experiments', icon: FlaskConical },
   { href: '/dashboard/notebooks', label: 'Notebooks', icon: BookOpen },
   { href: '/dashboard/papers', label: 'Papers', icon: FileText },
+  { href: '/dashboard/events', label: 'Events', icon: Activity },
   { href: '/dashboard/search', label: 'Search', icon: Search },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]

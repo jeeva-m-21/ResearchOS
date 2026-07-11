@@ -1,18 +1,22 @@
 # STATE.md
 
-## Current Sprint: T-038 — Graph Search: Edge-based Result Enrichment
+## Current Sprint: T-039 — Event System Consumer Health Dashboard
 
-**Goal**: Add graph search capability by creating the `edges` table, implementing graph domain entities, and integrating edge-based traversal into the search service so users can query relationships between research nodes.
+**Goal**: Build a frontend dashboard for monitoring the event system health, consumer group status, stream statistics, and dead letter queue management. Backend endpoints already exist; the missing piece is the UI.
 
 ### Plan
-1. ✅ Step 1: Create Alembic migration for `edge_type` enum and `edges` table
-2. ✅ Step 2: Implement domain entities for graph in `domain/graph/`
-3. ✅ Step 3: Add graph search to SearchService + API route
-4. ✅ Step 4: Seed edge data between existing test nodes
-5. ✅ Step 5: Write tests for graph search
-6. ✅ Step 6: Run feedback loop (ruff, mypy, pytest) and commit
+1. Create frontend API client (`frontend/lib/api/events.ts`) for events endpoints (health, stats, consumer health, DLQ retry, event types)
+2. Build events dashboard page at `frontend/app/dashboard/events/page.tsx` with:
+   - Overall system health card (status, uptime indicators)
+   - Consumer group health cards per group (projectors, notifiers, embedders, auditors)
+   - Stream statistics (event count, rate, lag)
+   - Event type listing
+   - DLQ retry buttons
+3. Add "Events" nav item to sidebar in `layout.tsx`
+4. Verify with `npx tsc --noEmit` and `npm run build`
+5. Commit and push
 
-**Status**: Done
+**Status**: In Progress
 
 ### Done (previous sprints)
 - T-038 — Graph Search: Edge-based Result Enrichment (81/81 tests)
@@ -28,5 +32,4 @@
 
 ### Next priorities (available)
 - **Python SDK offline-first WAL sync**: large feature, ~4-5 sprints
-- **Event System consumer health dashboard**: medium, ~1 sprint
 - **Dockerfile changes**: protected path (cannot edit)
